@@ -1,10 +1,10 @@
 {
 	"id": "obsidian-simple-quiz",
 	"name": "Simple Quiz",
-	"version": "1.0.0",
-	"minAppVersion": "0.15.0",
-	"description": "Creating simple quizzes...",
-	"author": "Ivan Kalmar",
+	"version": "0.1.0",
+	"minAppVersion": "1.6.7",
+	"description": "Creating simple quizzes.",
+	"author": "Ivan Kalmar <ivan.kalmar6@gmail.com>",
 	"authorUrl": "https://github.com/IvanKalmar",
 	"isDesktopOnly": false
 }

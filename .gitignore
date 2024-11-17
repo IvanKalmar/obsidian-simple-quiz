@@ -1,3 +1,9 @@
+# Obsidian
+index.json
+results.json
+params.json
+data.json
+
 package-lock.json
 
 # vscode
@@ -17,8 +23,6 @@ main.js
 # Exclude sourcemaps
 *.map
 
-# obsidian
-data.json
 
 # Exclude macOS Finder (System Explorer) View States
 .DS_Store
@@ -36,10 +40,10 @@ data.json
 # AWS User-specific
 .idea/**/aws.xml
 
-# Generated files
+# Generated cache
 .idea/**/contentModel.xml
 
-# Sensitive or high-churn files
+# Sensitive or high-churn cache
 .idea/**/dataSources/
 .idea/**/dataSources.ids
 .idea/**/dataSources.local.xml
@@ -53,7 +57,7 @@ data.json
 .idea/**/libraries
 
 # Gradle and Maven with auto-import
-# When using Gradle or Maven with auto-import, you should exclude module files,
+# When using Gradle or Maven with auto-import, you should exclude module cache,
 # since they will be recreated, and may cause churn.  Uncomment if using
 # auto-import.
 # .idea/artifacts
