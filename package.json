@@ -1,5 +1,5 @@
 {
-	"name": "obsidian-simple-quiz",
+	"name": "simple-quiz",
 	"version": "0.1.0",
 	"description": "Creating simple quizzes.",
 	"main": "main.js",
