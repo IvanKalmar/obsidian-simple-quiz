@@ -198,13 +198,13 @@ export class ModalIndexPageView {
 		minusIcon.on("click", "span", () => {
 			let step = this.questionsCount < 5 ? 1 : 5;
 			this.questionsCount = (this.questionsCount - step) < 1 ? 1 : this.questionsCount - step;
-			count.innerHTML = this.questionsCount.toString();
+			count.setText(this.questionsCount.toString());
 		});
 
 		plusIcon.on("click", "span", () => {
 			let step = this.questionsCount < 5 ? 1 : 5;
 			this.questionsCount = (this.questionsCount + step) > 100 ? 100 : this.questionsCount + step;
-			count.innerHTML = this.questionsCount.toString();
+			count.setText(this.questionsCount.toString());
 		});
 	}
 
