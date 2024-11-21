@@ -35,10 +35,20 @@ export default class SimpleQuizPlugin extends Plugin {
 		window.CodeMirror.defineMode(this.settings.dataJSONTag,
 			config => window.CodeMirror.getMode(config, "application/json"));
 
-		this.registerMarkdownCodeBlockProcessor(
-			this.settings.dataJSTag,
-			this.getMarkdownCodeBlockProcessor((source) => this.parser.parseCardsJS(source))
-		);
+		if(this.settings.enableJS) {
+			this.registerMarkdownCodeBlockProcessor(
+				this.settings.dataJSTag,
+				this.getMarkdownCodeBlockProcessor((source) => this.parser.parseCardsJS(source))
+			);
+		} else {
+			this.registerMarkdownCodeBlockProcessor(
+				this.settings.dataJSTag,
+				(source, el, ctx) => {
+					el.setText("JS scripts disabled, enable from settings")
+				}
+			);
+		}
+
 
 		window.CodeMirror.defineMode(this.settings.dataJSTag,
 			config => window.CodeMirror.getMode(config, "text/javascript"));
@@ -80,7 +90,6 @@ export default class SimpleQuizPlugin extends Plugin {
 	getMarkdownCodeBlockProcessor(parser: (source_: string) => AsyncGenerator<Flashcard>):
 		(source_: string, el_: HTMLElement, ctx_: MarkdownPostProcessorContext) => void {
 		return (source, el, ctx) => {
-
 			const flashcardsPromise: Promise<Flashcard[]> = new Promise(async (resolve, reject) => {
 				let flashcards: Flashcard[] = [];
 

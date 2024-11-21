@@ -16,10 +16,9 @@
 ```
 
 ```quizjs
-let flashcards = [];
 
 for(let i = 0; i < 100; i++) {
-	flashcards.push({
+	fc.addCard({
 		question: {
 			left: [`question${i}`],
 			right: [`answer${i}`]
@@ -29,5 +28,5 @@ for(let i = 0; i < 100; i++) {
 	});
 }
 
-return flashcards;
+fc.commit();
 ```

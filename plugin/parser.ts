@@ -28,13 +28,16 @@ export class Parser {
 			}
 		}
 
-		for (const cardsRegExp of file.matchAll(this.JS_BLOCK_REGEX)) {
-			let cards = cardsRegExp.toString().trim();
-			cards = cards.substring(this.plugin.settings.dataJSTag.length + 3, cards.length - 3).trim();
-			for await (const flashcard of this.parseCardsJS(cards)) {
-				flashcards.push(flashcard)
+		if(this.plugin.settings.enableJS) {
+			for (const cardsRegExp of file.matchAll(this.JS_BLOCK_REGEX)) {
+				let cards = cardsRegExp.toString().trim();
+				cards = cards.substring(this.plugin.settings.dataJSTag.length + 3, cards.length - 3).trim();
+				for await (const flashcard of this.parseCardsJS(cards)) {
+					flashcards.push(flashcard)
+				}
 			}
 		}
+
 		return flashcards;
 	}
 
@@ -48,6 +51,10 @@ export class Parser {
 	}
 
 	async *parseCardsJS(data: string) {
+		if(!this.plugin.settings.enableJS) {
+			return;
+		}
+
 		for(const flashcard of await eval_(data)) {
 			yield flashcard;
 		}
@@ -55,29 +62,27 @@ export class Parser {
 }
 
 async function eval_(code_: string): Promise<Flashcard[]> {
-	const code = `
-		new Promise(async (resolve, reject) => {
-			let flashcards = await (async () => {
-				${code_}
-			})();
-			resolve(flashcards);
-		});
-	`;
+	return new Promise((resolve, reject) => {
+		const fc = new (class {
+			cards: Object[] = [];
 
-	let result: Promise<any> = eval(code);
-
-	return result.then((flashcardsObjects: object[]) => {
-		let flashcards = [];
-
-		for(const flashcardObject of flashcardsObjects) {
-			let f = Flashcard.from(flashcardObject);
-			if(f.isValid()) {
-				flashcards.push(f);
+			addCard(obj: Object) {
+				this.cards.push(obj);
 			}
-		}
 
-		return flashcards;
-	}).catch(() => {
-		return [];
-	});
+			commit() {
+				let flashcards = [];
+				for(const obj of this.cards) {
+					let f = Flashcard.from(obj);
+					if(f.isValid()) {
+						flashcards.push(f);
+					}
+				}
+
+				resolve(flashcards);
+			}
+		}) ();
+
+		eval(`${code_}`);
+	})
 }

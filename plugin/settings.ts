@@ -9,6 +9,7 @@ export interface SimpleQuizPluginSettings {
 
 	indexing: boolean;
 	saveResults: boolean;
+	enableJS: boolean;
 
 	showCardsPlaceholder: boolean;
 }
@@ -20,6 +21,7 @@ export const DEFAULT_SETTINGS: SimpleQuizPluginSettings = {
 
 	indexing: true,
 	saveResults: true,
+	enableJS: false,
 
 	showCardsPlaceholder: true,
 }
@@ -45,6 +47,16 @@ export class SimpleQuizSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.showCardsPlaceholder = value;
 					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Load cards using JS')
+			.addToggle(text => text
+				.setValue(this.plugin.settings.enableJS)
+				.onChange(async (value) => {
+					this.plugin.settings.enableJS = value;
+					await this.plugin.saveSettings();
+					this.display();
 				}));
 
 
@@ -112,14 +124,16 @@ export class SimpleQuizSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-		new Setting(containerEl)
-			.setName('Cards from JS tag')
-			.addText(text => text
-				.setValue(this.plugin.settings.dataJSTag)
-				.onChange(async (value) => {
-					this.plugin.settings.dataJSTag = value;
-					await this.plugin.saveSettings();
-				}));
+		if(this.plugin.settings.enableJS) {
+			new Setting(containerEl)
+				.setName('Cards from JS tag')
+				.addText(text => text
+					.setValue(this.plugin.settings.dataJSTag)
+					.onChange(async (value) => {
+						this.plugin.settings.dataJSTag = value;
+						await this.plugin.saveSettings();
+					}));
+		}
 
 		if(this.plugin.settings.saveResults) {
 			new Setting(containerEl)

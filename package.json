@@ -1,6 +1,6 @@
 {
 	"name": "simple-quiz",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Creating simple quizzes.",
 	"main": "main.js",
 	"scripts": {
@@ -17,7 +17,7 @@
 		"obsidian-plugin",
 		"obsidian-md"
 	],
-	"author": "Ivan Kalmar <ivan.kalmar6@gmail.com>",
+	"author": "Ivan Kalmar",
 	"license": "MIT",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
