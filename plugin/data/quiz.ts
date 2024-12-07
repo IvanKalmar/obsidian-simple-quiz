@@ -1,60 +1,47 @@
-import {Results} from "./results";
-import {Flashcard, FlashcardSide} from "./flashcards";
+import {ResultsController} from "./controllers/resultsController";
+
+import {Flashcard, FlashcardSide} from "./flashcard";
+import {FlashcardsManager} from "./flashcardsManager";
+
+
+export type QuizQuestionHandler = (question: QuizQuestion) => boolean | null;
 
 
 export class Quiz {
-	flashcards: Flashcard[];
-	arguments: QuizArguments | null;
-	results: Results | null;
+	resultsController: ResultsController;
+	quizArguments: QuizArguments;
 
-	constructor() {
-		this.flashcards = [];
-		this.arguments = null;
-		this.results = null;
-	}
-
-	setFlashcards(flashcards: Flashcard[]): this {
-		this.flashcards = flashcards;
-		return this;
-	}
-
-	setArguments(args: QuizArguments): this {
-		this.arguments = args;
-		return this
-	}
-
-	setResults(results: Results): this {
-		this.results = results;
-		return this;
+	constructor(resultsController: ResultsController, quizArguments: QuizArguments) {
+		this.resultsController = resultsController;
+		this.quizArguments = quizArguments;
 	}
 
 	getQuestions() {
-		let flashcards = this.flashcards;
+		let flashcards = this.quizArguments.flashcardsManager.getQuizFlashcards();
 
-		const results = this.results;
-		if (results) {
-			flashcards.sort((a, b) => {
-				let aScore = results.getCardScore(a.id);
-				let bScore = results.getCardScore(b.id);
-
-				if (aScore < bScore) {
+		if (this.resultsController) {
+			flashcards = flashcards.map(flashcard => {
+				return {
+					flashcard: flashcard,
+					score: this.resultsController.getCardScore(flashcard.id)
+				}
+			}).sort((a, b) => {
+				if (a.score < b.score) {
 					return -1;
-				} else if (aScore > bScore) {
+				} else if (a.score > b.score) {
 					return 1;
 				}
 				return 0;
-			})
+			}).map(flashcard => {
+				return flashcard.flashcard;
+			});
 		} else {
 			flashcards.shuffle();
 		}
 
-		if (this.arguments) {
-			flashcards = flashcards.slice(0, this.arguments.questionsCount);
-		}
-
 		let questions: QuizQuestion[] = [];
 
-		for (const flashcard of flashcards) {
+		for (const flashcard of flashcards.slice(0, this.quizArguments.questionsCount)) {
 			if (flashcard.notReversible) {
 				questions.push(new QuizQuestion(
 					flashcard,
@@ -113,6 +100,16 @@ export class Quiz {
 	}
 }
 
+export class QuizArguments {
+	flashcardsManager: FlashcardsManager;
+	questionsCount: number;
+
+	constructor(flashcardsManager: FlashcardsManager, questionsCount: number) {
+		this.flashcardsManager = flashcardsManager;
+		this.questionsCount = questionsCount;
+	}
+}
+
 
 export class QuizQuestion {
 	flashcard: Flashcard;
@@ -126,26 +123,8 @@ export class QuizQuestion {
 		this.answer = null;
 	}
 
-	getQuestionTitle(): string {
-		return this.flashcard.title ? this.flashcard.title : "";
-	}
-
 	setAnswer(answer: any) {
 		this.answer = answer;
-	}
-}
-
-
-export class QuizArguments {
-	questionsCount: number
-
-	constructor() {
-		this.questionsCount = 0;
-	}
-
-	setQuestionsCount(questionsCount: number) {
-		this.questionsCount = questionsCount;
-		return this;
 	}
 }
 
@@ -153,40 +132,13 @@ export class QuizArguments {
 export class QuizResult {
 	questions: QuizQuestion[];
 	completedAt: Date;
-}
 
-
-export class QuizParams {
-	selectedPools: Set<string>;
-	selectedTags: Set<string>;
-	selectedFlashcards: Set<string>;
-	questionsCount: number;
-
-	constructor(selectedPools: Set<string> = new Set(), selectedTags: Set<string> = new Set(),
-				selectedFlashcards: Set<string> = new Set(), questionsCount: number = 1) {
-		this.selectedPools = selectedPools;
-		this.selectedTags = selectedTags;
-		this.selectedFlashcards = selectedFlashcards;
-		this.questionsCount = questionsCount;
-	}
-
-	static from(object: object): QuizParams {
-		let quizParams = Object.assign(new QuizParams(), object);
-
-		quizParams.selectedPools = new Set(quizParams.selectedPools);
-		quizParams.selectedTags = new Set(quizParams.selectedTags);
-		quizParams.selectedFlashcards = new Set(quizParams.selectedFlashcards);
-		quizParams.questionsCount = Number(quizParams.questionsCount);
-
-		return quizParams;
-	}
-
-	to() {
-		return {
-			selectedPools: Array.from(this.selectedPools),
-			selectedTags: Array.from(this.selectedTags),
-			selectedFlashcards: Array.from(this.selectedFlashcards),
-			questionsCount: this.questionsCount,
+	getFlashcardsIDs(): string[] {
+		const flashcardsIDs = new Set<string>();
+		for(const question of this.questions) {
+			flashcardsIDs.add(question.flashcard.id);
 		}
+
+		return Array.from(flashcardsIDs);
 	}
 }

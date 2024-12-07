@@ -1,121 +1,167 @@
 import {MarkdownPostProcessorContext, Plugin} from 'obsidian';
-import {Flashcard} from "./data/flashcards";
 import {DEFAULT_SETTINGS, SimpleQuizPluginSettings, SimpleQuizSettingTab} from "./settings";
-import {Parser} from "./parser";
-import {SimpleQuizModal} from "./modal/modal";
-import {DataController} from "./data/controller";
-import {Results} from "./data/results";
-import {MarkdownPlaceholderBlockView, MarkdownResultsView} from "./markdown";
-import {Index} from "./data";
+import {Parser, ParserResult} from "./parser";
+import {SimpleQuizModal} from "./modal";
+import {DataController} from "./data/controllers/dataController";
+import {ResultsController} from "./data/controllers/resultsController";
+import {MarkdownCardsPlaceholderView} from "./views/markdown/cardsPlaceholder";
+import {MarkdownTodayView} from "./views/markdown/today";
+import {MarkdownQuizView} from "./views/markdown/quiz";
+import {Flashcard} from "./data/flashcard";
+import {GroupsController} from "./data/controllers/groupsController";
+import {QuizViewSettings} from "./views/quiz";
 
 
 export default class SimpleQuizPlugin extends Plugin {
 	settings: SimpleQuizPluginSettings;
 
-	parser: Parser;
 	dataController: DataController;
+	groupsController: GroupsController;
+	resultsController: ResultsController;
 
-	index: Index;
-	results: Results;
+	parser: Parser;
 
 	async onload() {
 		await this.loadSettings();
 
 		this.parser = new Parser(this.app, this);
-		this.dataController = new DataController(this.app, this);
 
-		this.index = new Index(this.dataController, this.settings.indexing);
-		this.results = new Results(this.dataController, this.settings.saveResults);
+		this.dataController = new DataController().setPlugin(this);
+		this.resultsController = new ResultsController().setPlugin(this);
+		this.groupsController = new GroupsController().setPlugin(this);
 
+		this.dataController.load().then(() => {
+			return this.resultsController.load();
+		}).then(() => {
+			this.groupsController.load();
+		});
+
+		// Load JSON cards
 		this.registerMarkdownCodeBlockProcessor(
 			this.settings.dataJSONTag,
-			this.getMarkdownCodeBlockProcessor((source) => this.parser.parseCardsJSON(source))
+			this.getCardsBlockMarkdownProcessor((source) => this.parser.parseCardsJSON(source))
 		);
 
-		window.CodeMirror.defineMode(this.settings.dataJSONTag,
-			config => window.CodeMirror.getMode(config, "application/json"));
+		// JSON highlighting
+		window.CodeMirror.defineMode(
+			this.settings.dataJSONTag,
+			config => window.CodeMirror.getMode(config, "application/json")
+		);
 
+		// Load JS cards
 		if(this.settings.enableJS) {
 			this.registerMarkdownCodeBlockProcessor(
 				this.settings.dataJSTag,
-				this.getMarkdownCodeBlockProcessor((source) => this.parser.parseCardsJS(source))
+				this.getCardsBlockMarkdownProcessor((source) => this.parser.parseCardsJS(source))
 			);
 		} else {
 			this.registerMarkdownCodeBlockProcessor(
 				this.settings.dataJSTag,
 				(source, el, ctx) => {
-					el.setText("JS scripts disabled, enable from settings")
+					new MarkdownCardsPlaceholderView(el)
+						.setError("JS scripts disabled, enable from settings")
+						.render();
 				}
 			);
 		}
 
+		// JS highlighting
+		window.CodeMirror.defineMode(
+			this.settings.dataJSTag,
+			config => window.CodeMirror.getMode(config, "text/javascript")
+		);
 
-		window.CodeMirror.defineMode(this.settings.dataJSTag,
-			config => window.CodeMirror.getMode(config, "text/javascript"));
+		// Today tag
+		this.registerMarkdownCodeBlockProcessor(
+			this.settings.todayTag, (source_: string, el_: HTMLElement, ctx_: MarkdownPostProcessorContext) => {
+				let results = new MarkdownTodayView(el_)
+					.setShowStartButton(this.settings.showStartButtonInStatistics)
+					.setResultsController(this.resultsController)
+					.setOnOpen(() => { this.quizWithAllCards(); });
 
-		this.registerMarkdownCodeBlockProcessor(this.settings.todayStatisticsTag,
-			(source_: string, el_: HTMLElement, ctx_: MarkdownPostProcessorContext) => {
-				let results = new MarkdownResultsView(el_)
-					.setResults(this.results)
-					.setOnOpen(async () => {
-						this.openQuizModal(await this.dataController.loadAllFlashcards())
-					});
-
-				if(this.results) {
-					results.setResults(this.results)
+				if(this.resultsController) {
+					results.setResultsController(this.resultsController)
 				}
 
 				results.render();
 			});
 
+		// Quiz tag
+		this.registerMarkdownCodeBlockProcessor(
+			this.settings.quizTag, async (source_: string, el_: HTMLElement, ctx_: MarkdownPostProcessorContext) => {
+				let sources = null;
+				try {
+					sources = JSON.parse(source_)?.sources || null;
+				} catch (_) { }
+
+				const quizViewSettings = new QuizViewSettings(
+					this.settings.soundFeedback,
+					this.settings.vibrateFeedback
+				);
+
+				new MarkdownQuizView(el_)
+					.setDataController(this.dataController)
+					.setResultsController(this.resultsController)
+					.setGroupsController(this.groupsController)
+					.setParserResult(await this.dataController.getAllData(sources))
+					.setQuizViewSettings(quizViewSettings)
+					.render();
+			});
+
+		// Quiz json settings highlighting
+		window.CodeMirror.defineMode(
+			this.settings.quizTag,
+			config => window.CodeMirror.getMode(config, "application/json")
+		);
+
+
 		this.addSettingTab(new SimpleQuizSettingTab(this.app, this));
 
-		const runQuiz = async () => {
-			this.openQuizModal(
-				this.settings.indexing ?
-					this.index.getFlashcards() :
-					await this.dataController.loadAllFlashcards()
-			);
-		}
-
-		this.addRibbonIcon('play', 'Run quiz!', runQuiz);
+		this.addRibbonIcon(
+			'play',
+			'Run quiz!',
+			() => { this.quizWithAllCards(); }
+		);
 
 		this.addCommand({
 			id: 'run-quiz',
 			name: 'Run quiz!',
-			callback: runQuiz
+			callback: () => { this.quizWithAllCards(); }
 		});
 	}
 
-	getMarkdownCodeBlockProcessor(parser: (source_: string) => AsyncGenerator<Flashcard>):
+	getCardsBlockMarkdownProcessor(parser: (source_: string) => Promise<ParserResult>):
 		(source_: string, el_: HTMLElement, ctx_: MarkdownPostProcessorContext) => void {
-		return (source, el, ctx) => {
-			const flashcardsPromise: Promise<Flashcard[]> = new Promise(async (resolve, reject) => {
-				let flashcards: Flashcard[] = [];
-
-				try {
-					for await (const flashcard of parser(source)) {
-						flashcards.push(flashcard);
-					}
-				} catch (e) { reject(e.toString()); }
-
-				resolve(flashcards)
-			});
-
-			if(this.settings.showCardsPlaceholder) {
-				const markdownView = new MarkdownPlaceholderBlockView(el);
-				flashcardsPromise.then((flashcards: Flashcard[]) => {
-					markdownView.setFlashcards(flashcards).setOnOpen(() => {
-						this.openQuizModal(flashcards);
-					})
-				}).catch((error) => {
-					console.error(error);
-					markdownView.setError(error);
-				}).finally(() => {
-					markdownView.render();
-				})
+		return async (source, el, ctx) => {
+			if(!this.settings.showCardsPlaceholder) {
+				return;
 			}
+
+			const view = new MarkdownCardsPlaceholderView(el)
+				.setShowStartButton(this.settings.showStartButtonInPlaceholder)
+				.setShowData(this.settings.showDataInPlaceholder);
+
+			new Promise(async (resolve, reject) => {
+				try {
+					resolve((await parser(source)).flashcards);
+				} catch (e) { reject(e.toString()); }
+			}).then((flashcards: Flashcard[]) => {
+				view.setFlashcards(flashcards).setOnOpen(() => {
+					this.openQuizModal(flashcards);
+				});
+			}).catch((error) => {
+				view.setError(error);
+			}).finally(() => {
+				view.render();
+			});
 		}
+
+
+	}
+
+	async quizWithAllCards() {
+		const flashcards  = (await this.dataController.getAllData()).flashcards;
+		this.openQuizModal(flashcards);
 	}
 
 	openQuizModal(flashcards: Flashcard[]) {
@@ -128,8 +174,7 @@ export default class SimpleQuizPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-		this.index.setIndexing(this.settings.indexing);
-		this.results.setSaveResults(this.settings.saveResults);
+		await this.resultsController.setEnabled(this.settings.saveResults);
 	}
 }
 

@@ -1,6 +1,8 @@
-import {Flashcard} from "./data/flashcards";
 import SimpleQuizPlugin from "./plugin";
 import {App} from "obsidian";
+import {QuizQuestionHandler} from "./data/quiz";
+import {Flashcard, FlashcardException} from "./data/flashcard";
+
 
 export class Parser {
 	plugin: SimpleQuizPlugin;
@@ -11,78 +13,97 @@ export class Parser {
 	constructor(app: App, plugin: SimpleQuizPlugin) {
 		this.plugin = plugin;
 
-		this.JSON_BLOCK_REGEX = new RegExp("\`{3}" +
-			`${this.plugin.settings.dataJSONTag}` + "\\s+[\\s\\S]*?\`{3}", 'igm');
-		this.JS_BLOCK_REGEX = new RegExp("\`{3}" +
-			`${this.plugin.settings.dataJSTag}` + "\\s+[\\s\\S]*?\`{3}", 'igm');
+		this.JSON_BLOCK_REGEX = new RegExp(
+			"\`{3}" + `${this.plugin.settings.dataJSONTag}` + "\\s+[\\s\\S]*?\`{3}",
+			'igm'
+		);
+		this.JS_BLOCK_REGEX = new RegExp(
+			"\`{3}" + `${this.plugin.settings.dataJSTag}` + "\\s+[\\s\\S]*?\`{3}",
+			'igm'
+		);
 	}
 
-	async parseFile(file: string): Promise<Flashcard[]> {
-		let flashcards: Flashcard[] = [];
+	async parseFile(file: string): Promise<ParserResult> {
+		let parserResult = new ParserResult([], []);
 
 		for (const cardsRegExp of file.matchAll(this.JSON_BLOCK_REGEX)) {
 			let cards = cardsRegExp.toString().trim();
 			cards = cards.substring(this.plugin.settings.dataJSONTag.length  + 3, cards.length - 3).trim();
-			for await (const flashcard of this.parseCardsJSON(cards)) {
-				flashcards.push(flashcard)
-			}
+			parserResult.append(await this.parseCardsJSON(cards));
 		}
 
 		if(this.plugin.settings.enableJS) {
 			for (const cardsRegExp of file.matchAll(this.JS_BLOCK_REGEX)) {
 				let cards = cardsRegExp.toString().trim();
 				cards = cards.substring(this.plugin.settings.dataJSTag.length + 3, cards.length - 3).trim();
-				for await (const flashcard of this.parseCardsJS(cards)) {
-					flashcards.push(flashcard)
-				}
+				parserResult.append(await this.parseCardsJS(cards));
 			}
 		}
 
-		return flashcards;
+		return parserResult;
 	}
 
-	async *parseCardsJSON(data: string) {
+	async parseCardsJSON(data: string): Promise<ParserResult> {
+		let flashcards = [];
 		for (const card of JSON.parse(data)) {
 			let flashcard = Flashcard.from(card)
 			if(flashcard.isValid()) {
-				yield flashcard;
+				flashcards.push(flashcard);
 			}
 		}
+
+		return new ParserResult(flashcards, []);
 	}
 
-	async *parseCardsJS(data: string) {
+	async parseCardsJS(data: string): Promise<ParserResult> {
 		if(!this.plugin.settings.enableJS) {
-			return;
+			return new ParserResult([], []);
 		}
 
-		for(const flashcard of await eval_(data)) {
-			yield flashcard;
-		}
+		return await eval_(data);
 	}
 }
 
-async function eval_(code_: string): Promise<Flashcard[]> {
+export class ParserResult {
+	flashcards: Flashcard[];
+	handlers: QuizQuestionHandler[];
+
+	constructor(flashcards: Flashcard[], handlers: QuizQuestionHandler[]) {
+		this.flashcards = flashcards;
+		this.handlers = handlers;
+	}
+
+	append(parserResult: ParserResult): this {
+		this.flashcards = this.flashcards.concat(parserResult.flashcards);
+		this.handlers = this.handlers.concat(parserResult.handlers);
+		return this;
+	}
+}
+
+async function eval_(code_: string): Promise<ParserResult> {
 	return new Promise((resolve, reject) => {
 		const fc = new (class {
-			cards: Object[] = [];
+			flashcards: Flashcard[] = [];
+			handlers: QuizQuestionHandler[] = [];
 
 			addCard(obj: Object) {
-				this.cards.push(obj);
+				let flashcard = Flashcard.from(obj);
+				if(flashcard.isValid()) {
+					this.flashcards.push(flashcard);
+				} else {
+					throw new FlashcardException("Invalid flashcard");
+				}
+			}
+
+			addHandler(handler: QuizQuestionHandler) {
+				this.handlers.push(handler);
 			}
 
 			commit() {
-				let flashcards = [];
-				for(const obj of this.cards) {
-					let f = Flashcard.from(obj);
-					if(f.isValid()) {
-						flashcards.push(f);
-					}
-				}
-
-				resolve(flashcards);
+				resolve(new ParserResult(this.flashcards, this.handlers));
 			}
 		}) ();
 
-		eval(`${code_}`);
+		eval(`"use strict";\n${code_}`);
 	})
 }
