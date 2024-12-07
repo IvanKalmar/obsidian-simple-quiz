@@ -20,6 +20,7 @@ export interface SimpleQuizPluginSettings {
 	showCardsPlaceholder: boolean;
 	minifyCardPlaceholder: boolean;
 
+	allowFullscreen: boolean;
 	soundFeedback: boolean;
 	vibrateFeedback: boolean;
 }
@@ -43,6 +44,7 @@ export const DEFAULT_SETTINGS: SimpleQuizPluginSettings = {
 	showCardsPlaceholder: true,
 	minifyCardPlaceholder: false,
 
+	allowFullscreen: false,
 	soundFeedback: false,
 	vibrateFeedback: false
 }
@@ -148,7 +150,17 @@ export class SimpleQuizSettingTab extends PluginSettingTab {
 				}));
 
 
-		new Setting(containerEl).setName('Feedback').setHeading();
+		new Setting(containerEl).setName('Question input').setHeading();
+
+		new Setting(containerEl)
+			.setName('Fullscreen card on input')
+			.setDesc("Only on mobile device")
+			.addToggle(text => text
+				.setValue(this.plugin.settings.allowFullscreen)
+				.onChange(async (value) => {
+					this.plugin.settings.allowFullscreen = value;
+					await this.plugin.saveSettings();
+				}));
 
 		new Setting(containerEl)
 			.setName('Sound feedback on answer input')

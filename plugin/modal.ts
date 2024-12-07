@@ -35,6 +35,7 @@ export class SimpleQuizModal extends Modal {
 		this.setTitle(this.baseTitle);
 
 		const quizViewSettings = new QuizViewSettings(
+			false,
 			this.plugin.settings.soundFeedback,
 			this.plugin.settings.vibrateFeedback
 		);

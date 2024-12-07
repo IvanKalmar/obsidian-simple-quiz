@@ -111,6 +111,7 @@ export default class SimpleQuizPlugin extends Plugin {
 				const markdownQuizViewSettings = Object.assign(new MarkdownQuizViewSettings(), settings);
 
 				const quizViewSettings = new QuizViewSettings(
+					this.settings.allowFullscreen,
 					this.settings.soundFeedback,
 					this.settings.vibrateFeedback
 				);

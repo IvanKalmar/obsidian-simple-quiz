@@ -8,10 +8,12 @@ import {DataController} from "../data/controllers/dataController";
 import {GroupsController} from "../data/controllers/groupsController";
 
 export class QuizViewSettings {
+	allowFullscreen: boolean;
 	soundFeedback: boolean;
 	vibrateFeedback: boolean;
 
-	constructor(soundFeedback: boolean, vibrateFeedback: boolean) {
+	constructor(allowFullscreen: boolean, soundFeedback: boolean, vibrateFeedback: boolean) {
+		this.allowFullscreen = allowFullscreen;
 		this.soundFeedback = soundFeedback;
 		this.vibrateFeedback = vibrateFeedback;
 	}
@@ -62,6 +64,7 @@ export class QuizView extends View {
 
 		const quizPage = new QuizPageView(container)
 			.setResultsController(this.resultsController)
+			.setAllowFullscreen(this.quizViewSettings.allowFullscreen)
 			.setSoundFeedback(this.quizViewSettings.soundFeedback)
 			.setVibrateFeedback(this.quizViewSettings.vibrateFeedback);
 

@@ -3,6 +3,7 @@ import {FlashcardSide} from "../../data/flashcard";
 import {PageView} from "./page";
 import {ResultsController} from "../../data/controllers/resultsController";
 import {getAudioBuffer} from "../../beep";
+import {Platform, setIcon} from "obsidian";
 
 export class QuizPageView extends PageView {
 	resultsController: ResultsController;
@@ -11,6 +12,7 @@ export class QuizPageView extends PageView {
 
 	onResult: (quizResult: QuizResult) => void;
 
+	allowFullscreen: boolean = false;
 	soundFeedback: boolean = false;
 	vibrateFeedback: boolean = false;
 
@@ -39,8 +41,34 @@ export class QuizPageView extends PageView {
 		return this;
 	}
 
+	setAllowFullscreen(allowFullscreen: boolean) {
+		this.allowFullscreen = allowFullscreen;
+		return this;
+	}
+
 	render() {
 		const quiz = new Quiz(this.resultsController, this.quizArguments);
+
+		if (Platform.isMobile && this.allowFullscreen) {
+			const closeIcon = this.container.createSpan({
+				cls: "large-icon absolute-top-right cursor-pointer",
+			});
+			setIcon(closeIcon, "shrink");
+
+			closeIcon.on("click", "span", () => {
+				document.exitFullscreen().then(() => {
+					container.classList.remove("default-background");
+					closeIcon.hide();
+				});
+			})
+
+			closeIcon.hide();
+
+			this.container.requestFullscreen().then(() => {
+				container.classList.add("default-background");
+				closeIcon.show();
+			});
+		}
 
 		let container = this.container.createDiv({
 			cls: "full-height flex-space-between-column"
@@ -50,8 +78,14 @@ export class QuizPageView extends PageView {
 
 		this.renderQuestions(container, questions).then(() => {
 			let result = quiz.calculateResult(questions);
-			this.onResult(result);
-		});
+
+			document.exitFullscreen()
+				.then(() => {})
+				.catch(() => {})
+				.finally(() => {
+					this.onResult(result);
+				});
+		}).catch(() => {});
 	}
 
 	async renderQuestions(container: HTMLElement, questions: QuizQuestion[]) {
@@ -79,10 +113,15 @@ export class QuizPageView extends PageView {
 			};
 		}
 
-		for (const question of questions) {
-			let answer = await this.renderQuestion(container, question);
+		const questionsContainer = container.createDiv({
+			cls: "full-height full-width flex-space-between-column padding-left-medium padding-right-medium"
+		});
+
+		for (let i = 0; i < questions.length; i++){
+			const question = questions[i];
+			let answer = await this.renderQuestion(questionsContainer, question, questions.length, i + 1);
 			question.setAnswer(answer);
-			container.empty();
+			questionsContainer.empty();
 
 			if(this.soundFeedback) {
 				soundFeedback();
@@ -94,7 +133,11 @@ export class QuizPageView extends PageView {
 		}
 	}
 
-	async renderQuestion(container: HTMLElement, question: QuizQuestion) {
+	async renderQuestion(container: HTMLElement, question: QuizQuestion, questionsCount: number, currentQuestion: number) {
+		container.createEl("h5", {
+			cls: "secondary-text",
+			text: `${currentQuestion} / ${questionsCount}`
+		})
 		let questionList = question.side === FlashcardSide.LEFT
 			? question.flashcard.question.left : question.flashcard.question.right;
 
@@ -108,21 +151,20 @@ export class QuizPageView extends PageView {
 
 		for(let i = 1; i < questionList.length; i++) {
 			questionContainer.createEl("h3", {
+				cls: "normal-text",
 				text: questionList[i]
 			})
 		}
 
 		const bottomContainer = container.createDiv({
-			cls: "full-width flex-center-column"
+			cls: "full-width flex-space-between-column padding-bottom-large"
 		});
 
 		let textarea = bottomContainer.createEl("textarea", {
-			cls: "margin-medium padding-medium full-width medium-large-text container-style disable-outline always-primary-border static-height"
+			cls: "margin-medium padding-medium full-width medium-large-text container-style " +
+				"padding-top-small disable-outline always-primary-border static-height"
 		});
-
-		bottomContainer.createEl("hr", {
-			cls: "full-width margin-top-large margin-bottom-large"
-		})
+		textarea.focus();
 
 		let buttonContainer = bottomContainer.createDiv({
 			cls: "full-width flex-space-between",
@@ -145,6 +187,20 @@ export class QuizPageView extends PageView {
 			answerButton.on("click", "button", () => {
 				resolve(textarea.value);
 			});
+
+			if(Platform.isMobile) {
+				bottomContainer.addClass("margin-bottom-large");
+			}
+
+			if(!Platform.isMobile) {
+				textarea.on("keydown", "textarea", (event) => {
+					if (event.key == "Enter" && event.shiftKey) {
+						event.preventDefault();
+						resolve(textarea.value);
+					}
+				});
+				textarea.setAttribute("placeholder", "Press Shift + Enter to submit answer");
+			}
 		})
 	}
 }

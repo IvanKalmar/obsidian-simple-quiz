@@ -15,6 +15,10 @@
 	font-size: var(--font-ui-medium);
 }
 
+.normal-text {
+	color: var(--text-normal) !important;
+}
+
 .secondary-text {
 	color: var(--text-faint) !important;
 }
@@ -159,8 +163,20 @@
 	margin-top: 32px;
 }
 
+.padding-left-medium {
+	padding-left: 16px;
+}
+
+.padding-bottom-small {
+	padding-bottom: 8px;
+}
+
 .padding-right-medium {
 	padding-right: 16px;
+}
+
+.padding-top-small {
+	padding-bottom: 8px;
 }
 
 .margin-small {
@@ -177,6 +193,10 @@
 
 .padding-medium {
 	padding: 16px;
+}
+
+.padding-large {
+	padding: 32px;
 }
 
 .disable-spacing {
@@ -235,8 +255,20 @@
 	margin-top: 16px;
 }
 
+.is-mobile .padding-left-medium {
+	padding-left: 8px;
+}
+
+.is-mobile .padding-bottom-small {
+	padding-bottom: 4px;
+}
+
 .is-mobile .padding-right-medium {
 	padding-right: 8px;
+}
+
+.is-mobile .padding-top-small {
+	padding-bottom: 4px;
 }
 
 .is-mobile .margin-small {
@@ -255,6 +287,9 @@
 	padding: 8px;
 }
 
+.is-mobile .padding-large {
+	padding: 16px;
+}
 
 /* Another utils */
 
@@ -276,6 +311,11 @@
 	background: var(--background-modifier-form-field);
 	border: var(--input-border-width) solid var(--background-modifier-border);
 	color: var(--text-normal);
+	border-radius: var(--input-radius);
+}
+
+.container-style-border {
+	border: var(--border-width) solid var(--background-modifier-border);
 	border-radius: var(--input-radius);
 }
 
@@ -395,6 +435,17 @@
 
 .overflow-y {
 	overflow-y: auto;
+}
+
+.absolute-top-right {
+	position: absolute;
+	top: 16px;
+	right: 16px;
+	z-index: 9999;
+}
+
+.default-background {
+	background-color: var(--system-status-background);
 }
 
 

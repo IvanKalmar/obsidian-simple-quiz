@@ -29,16 +29,19 @@ export class ResultsPageView extends PageView{
 
 	render() {
 		const container = this.container.createDiv({
-			cls: "full-width full-height flex-space-between-column"
+			cls: "full-width full-height flex-space-between-column "
 		});
 
 		let answersContainer = container.createDiv({
-			cls: "flex-fill full-width margin-medium padding-small padding-right-medium static-height overflow-y"
+			cls: "flex-fill full-width margin-medium padding-left-medium padding-bottom-small padding-right-medium " +
+				"static-height overflow-y container-style-border"
 		});
 
-		for(const question of this.quizResults.questions) {
+		for (let i = 0; i < this.quizResults.questions.length; i++){
+			const question = this.quizResults.questions[i];
+
 			let answerContainer = answersContainer.createDiv({
-				cls: "flex-space-between margin-top-large"
+				cls: `flex-space-between ${i == 0 ? "" : "margin-top-large"}`
 			});
 
 			let startContainer = answerContainer.createDiv({
@@ -56,8 +59,14 @@ export class ResultsPageView extends PageView{
 			let answerList = question.side === FlashcardSide.LEFT
 				? question.flashcard.question.right : question.flashcard.question.left;
 
+			let anotherQuestions = questionList.slice(1).join(', ').trim();
+			if(anotherQuestions.length > 0) {
+				anotherQuestions = " - " + anotherQuestions;
+			}
+
 			startContainer.createEl("h3", {
-				text: `${questionList[0]} - ${questionList.slice(1).join(', ')}`,
+				cls: "normal-text",
+				text: `${questionList[0]}${anotherQuestions}`,
 			});
 
 			const successRate = Math.round(this.resultsController.getCardScore(question.flashcard.id) * 100);
@@ -81,14 +90,10 @@ export class ResultsPageView extends PageView{
 			})
 
 			answersContainer.createEl("h5", {
-				cls: `disable-spacing margin-bottom-small margin-small ${question.answer ? "" : "warning-text"}`,
+				cls: `disable-spacing margin-bottom-small margin-small ${question.answer ? "normal-text" : "warning-text"}`,
 				text: question.answer ? question.answer : "..."
 			})
 		}
-
-		container.createEl("hr", {
-			cls: "full-width margin-top-large margin-bottom-large"
-		})
 
 		let buttonContainer = container.createDiv({
 			cls: "full-width flex-end",
