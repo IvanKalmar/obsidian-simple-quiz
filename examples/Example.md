@@ -1,6 +1,6 @@
 # Examples
-Markdown files with examples of use. <br/> 
-Copy them to your vault, don't forget to install and enable the plugin beforehand.
+Markdown files with examples of usage. <br/> 
+Copy them to your vault, don't forget to install and enable the plugin.
 
 ## [Preview.md](Preview.md)
 An example of using all possible tags.
@@ -8,4 +8,4 @@ An example of using all possible tags.
 
 ## [Kanji.md](Kanji.md)
 Example of using JS to convert kanji.json to cards.<br/>
-Requires dataview.
+Requires `dataview`.

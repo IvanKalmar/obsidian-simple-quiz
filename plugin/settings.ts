@@ -18,10 +18,7 @@ export interface SimpleQuizPluginSettings {
 	enableJS: boolean;
 
 	showCardsPlaceholder: boolean;
-	showStartButtonInPlaceholder: boolean;
-	showDataInPlaceholder: boolean;
-
-	showStartButtonInStatistics: boolean;
+	minifyCardPlaceholder: boolean;
 
 	soundFeedback: boolean;
 	vibrateFeedback: boolean;
@@ -44,10 +41,7 @@ export const DEFAULT_SETTINGS: SimpleQuizPluginSettings = {
 	enableJS: false,
 
 	showCardsPlaceholder: true,
-	showStartButtonInPlaceholder: false,
-	showDataInPlaceholder: false,
-
-	showStartButtonInStatistics: false,
+	minifyCardPlaceholder: false,
 
 	soundFeedback: false,
 	vibrateFeedback: false
@@ -80,33 +74,14 @@ export class SimpleQuizSettingTab extends PluginSettingTab {
 
 		if(this.plugin.settings.showCardsPlaceholder) {
 			new Setting(containerEl)
-				.setName('Show start button in card placeholder')
+				.setName('Minify card placeholder')
 				.addToggle(text => text
-					.setValue(this.plugin.settings.showStartButtonInPlaceholder)
+					.setValue(this.plugin.settings.minifyCardPlaceholder)
 					.onChange(async (value) => {
-						this.plugin.settings.showStartButtonInPlaceholder = value;
+						this.plugin.settings.minifyCardPlaceholder = value;
 						await this.plugin.saveSettings();
-					}));
-
-			new Setting(containerEl)
-				.setName('Show data in card placeholder')
-				.addToggle(text => text
-					.setValue(this.plugin.settings.showDataInPlaceholder)
-					.onChange(async (value) => {
-						this.plugin.settings.showDataInPlaceholder = value;
-						await this.plugin.saveSettings();
-						this.display();
 					}));
 		}
-
-		new Setting(containerEl)
-			.setName('Show start button in statistics')
-			.addToggle(text => text
-				.setValue(this.plugin.settings.showStartButtonInStatistics)
-				.onChange(async (value) => {
-					this.plugin.settings.showStartButtonInStatistics = value;
-					await this.plugin.saveSettings();
-				}));
 
 		new Setting(containerEl).setName('Results').setHeading();
 
@@ -117,6 +92,7 @@ export class SimpleQuizSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.saveResults = value;
 					await this.plugin.saveSettings();
+					this.display()
 				}));
 
 		if(this.plugin.settings.saveResults) {

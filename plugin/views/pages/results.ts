@@ -75,7 +75,7 @@ export class ResultsPageView extends PageView{
 				cls: color,
 			})
 
-			answersContainer.createEl("h6", {
+			answersContainer.createEl("h5", {
 				cls: "disable-spacing margin-bottom-small margin-small secondary-text",
 				text: `[${answerList.join(", ")}]`
 			})

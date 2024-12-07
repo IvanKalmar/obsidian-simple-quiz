@@ -1,7 +1,7 @@
 {
 	"id": "simple-quiz",
 	"name": "Simple Quiz",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"minAppVersion": "1.6.7",
 	"description": "Creating simple quizzes.",
 	"author": "Ivan Kalmar",

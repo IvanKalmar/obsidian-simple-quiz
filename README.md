@@ -6,7 +6,7 @@
 <img src="https://img.shields.io/badge/Obsidian-%23483699.svg?style=for-the-badge&logo=obsidian&logoColor=white" />
 <img src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white" /> 
 <img src="https://img.shields.io/static/v1?label=License&message=MIT&color=3DDC84&style=for-the-badge" /> 
-<img src="https://img.shields.io/static/v1?label=Version&message=0.2.0&color=3DDC84&style=for-the-badge" />
+<img src="https://img.shields.io/static/v1?label=Version&message=0.2.1&color=3DDC84&style=for-the-badge" />
 </p>
 
 <p>
@@ -18,7 +18,6 @@ Currently, only manual input cards are supported.
 ```json5 
 {
 	id: "uniqueID",  // Card unique id, if empty create automatically, using question data;
-	title: "title",  // Card title;
 	question: {
 		left: ['Question', ...],  // Left question options;
 		right: ['Answer', ...]  // Right question options;
@@ -52,7 +51,7 @@ Currently, only manual input cards are supported.
 Must be enabled from settings. <br/>
 In the code `fc` object is available with two methods:
 - `addCard(flashcard);` - Adds a card, if it is not valid performs an exception.
- - `commit();` - Must be called after all required cards have been added.
+ - `commit();` - Must be called after all cards have been added.
 
 ~~~
 ```quizjs
@@ -76,9 +75,18 @@ fc.commit();
 
 
 ## Running quiz
-You can start a quiz either from the menu with an icon or a command `Simple Quiz:Run quiz!`, or by pressing the button on cards placeholder. <br/>
-When you start a quiz from the menu or by command, all available cards will be loaded. <br/>
-When launching from the placeholder, only cards declared in it will be loaded.
+There are several ways to start a quiz:
+1. Using the `Simple Quiz:Run quiz!` menu command;
+2. Using play icon button in menu;
+3. Using start button in card placeholder, or today statistics, if the minify mode is not activated;
+4. Insert `quiz` markdown block, who render inline quiz form;
+
+Depending on where the quiz was launched from, the set of cards will be different:
+1. Quiz from icon in menu, by command, or today statistics, all available cards will be loaded;
+2. Launching from the placeholder, only cards declared in it will be loaded;
+3. If start from `quiz` markdown block, by default  it will load all possible cards, but you can customize with `sources` argument;
+
+If saving results is enabled, the cards will be sorted by success, otherwise they will be randomly mixed.
 
 
 ## Manually installing the plugin

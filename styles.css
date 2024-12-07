@@ -34,6 +34,14 @@
 
 /* Icons */
 
+.small-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	align-content: center;
+	flex-direction: column;
+}
+
 .small-icon svg {
 	height: calc(var(--icon-xl) * 0.8) !important;
 	width: calc(var(--icon-xl) * 0.8) !important;
@@ -44,14 +52,30 @@
 	width: calc(var(--icon-xl) * 0.6) !important;
 }
 
+.medium-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	align-content: center;
+	flex-direction: column;
+}
+
 .medium-icon svg {
 	height: var(--icon-xl) !important;
 	width: var(--icon-xl) !important;
 }
 
 .is-mobile .medium-icon svg {
-	height: calc(var(--icon-xl) * 0.7) !important;
-	width: calc(var(--icon-xl) * 0.7) !important;
+	height: calc(var(--icon-xl) * 0.8) !important;
+	width: calc(var(--icon-xl) * 0.8) !important;
+}
+
+.large-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	align-content: center;
+	flex-direction: column;
 }
 
 .large-icon svg {
@@ -388,6 +412,13 @@
 	padding: 20px 20px 20px 25px;
 	margin: 20px 0 20px 0;
 	border-radius: var(--code-radius);
+
+	overflow-x: auto;
+}
+
+.markdown-base-block-minify {
+	padding: 10px 10px 10px 15px;
+	margin: 10px 0 10px 0;
 
 	overflow-x: auto;
 }

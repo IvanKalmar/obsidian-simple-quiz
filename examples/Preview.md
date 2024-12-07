@@ -1,4 +1,7 @@
 ```quiztoday
+{
+	"minify": true
+}
 ```
 
 ```quizjson

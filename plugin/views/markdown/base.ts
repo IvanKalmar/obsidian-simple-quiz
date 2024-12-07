@@ -26,13 +26,20 @@ export abstract class MarkdownBase extends View {
 		return this;
 	}
 
-	getBaseContainer(): MarkdownBaseContainer {
+	getBaseContainer(
+		simpleContainer: boolean = false,
+		centerHeader: boolean = false,
+		hideIcon: boolean = false,
+		hidePrimaryTitle: boolean = false,
+		hideSecondaryTitle: boolean = false,
+		hideActionsContainer: boolean = false,
+	): MarkdownBaseContainer {
 		let container = this.container.createDiv({
-			cls: "markdown-base-block"
+			cls: simpleContainer ? "markdown-base-block-minify" : "markdown-base-block"
 		});
 
 		let headerContainer = container.createDiv({
-			cls: "markdown-base-block-header-container"
+			cls: centerHeader ? "flex-center" : "markdown-base-block-header-container"
 		});
 
 		let headerTitleContainer = headerContainer.createDiv({
@@ -55,6 +62,11 @@ export abstract class MarkdownBase extends View {
 		let actionsContainer = headerContainer.createDiv({
 			cls: "markdown-base-block-header-actions-container"
 		});
+
+		if(hideIcon) { icon.remove(); }
+		if(hidePrimaryTitle) { primaryTitle.remove(); }
+		if(hideSecondaryTitle) { secondaryTitle.remove(); }
+		if(hideActionsContainer) { actionsContainer.remove(); }
 
 		return new MarkdownBaseContainer(icon, primaryTitle, secondaryTitle, actionsContainer, container);
 	}

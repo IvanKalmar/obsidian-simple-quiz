@@ -32,7 +32,7 @@ export class CardsCountView extends View {
 		setIcon(plusIcon, "plus");
 
 		minusIcon.on("click", "span", () => {
-			let step = this.count < 5 ? 1 : 5;
+			let step = this.count <= 5 ? 1 : 5;
 			this.count = (this.count - step) < 1 ? 1 : this.count - step;
 			count.setText(this.count.toString());
 			this.onCountUpdate(this.count);

@@ -2,7 +2,8 @@
 {
 	"sources": [
 		"Kanji.md"
-	]
+	],
+	"hideTitle": true
 }
 ```
 

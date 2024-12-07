@@ -5,8 +5,8 @@ import {SimpleQuizModal} from "./modal";
 import {DataController} from "./data/controllers/dataController";
 import {ResultsController} from "./data/controllers/resultsController";
 import {MarkdownCardsPlaceholderView} from "./views/markdown/cardsPlaceholder";
-import {MarkdownTodayView} from "./views/markdown/today";
-import {MarkdownQuizView} from "./views/markdown/quiz";
+import {MarkdownTodayView, MarkdownTodayViewSettings} from "./views/markdown/today";
+import {MarkdownQuizView, MarkdownQuizViewSettings} from "./views/markdown/quiz";
 import {Flashcard} from "./data/flashcard";
 import {GroupsController} from "./data/controllers/groupsController";
 import {QuizViewSettings} from "./views/quiz";
@@ -35,6 +35,7 @@ export default class SimpleQuizPlugin extends Plugin {
 		}).then(() => {
 			this.groupsController.load();
 		});
+
 
 		// Load JSON cards
 		this.registerMarkdownCodeBlockProcessor(
@@ -71,11 +72,17 @@ export default class SimpleQuizPlugin extends Plugin {
 			config => window.CodeMirror.getMode(config, "text/javascript")
 		);
 
+
 		// Today tag
 		this.registerMarkdownCodeBlockProcessor(
 			this.settings.todayTag, (source_: string, el_: HTMLElement, ctx_: MarkdownPostProcessorContext) => {
+				let settings = {};
+				try {
+					settings = JSON.parse(source_);
+				} catch (e) { }
+
 				let results = new MarkdownTodayView(el_)
-					.setShowStartButton(this.settings.showStartButtonInStatistics)
+					.setSettings(Object.assign(new MarkdownTodayViewSettings(), settings))
 					.setResultsController(this.resultsController)
 					.setOnOpen(() => { this.quizWithAllCards(); });
 
@@ -86,13 +93,22 @@ export default class SimpleQuizPlugin extends Plugin {
 				results.render();
 			});
 
+		// Today json highlighting
+		window.CodeMirror.defineMode(
+			this.settings.todayTag,
+			config => window.CodeMirror.getMode(config, "application/json")
+		);
+
+
 		// Quiz tag
 		this.registerMarkdownCodeBlockProcessor(
 			this.settings.quizTag, async (source_: string, el_: HTMLElement, ctx_: MarkdownPostProcessorContext) => {
-				let sources = null;
+				let settings = {};
 				try {
-					sources = JSON.parse(source_)?.sources || null;
+					settings = JSON.parse(source_);
 				} catch (_) { }
+
+				const markdownQuizViewSettings = Object.assign(new MarkdownQuizViewSettings(), settings);
 
 				const quizViewSettings = new QuizViewSettings(
 					this.settings.soundFeedback,
@@ -103,7 +119,10 @@ export default class SimpleQuizPlugin extends Plugin {
 					.setDataController(this.dataController)
 					.setResultsController(this.resultsController)
 					.setGroupsController(this.groupsController)
-					.setParserResult(await this.dataController.getAllData(sources))
+					.setParserResult(await this.dataController.getAllData(
+						markdownQuizViewSettings.sources
+					))
+					.setMarkdownQuizViewSettings(markdownQuizViewSettings)
 					.setQuizViewSettings(quizViewSettings)
 					.render();
 			});
@@ -138,8 +157,7 @@ export default class SimpleQuizPlugin extends Plugin {
 			}
 
 			const view = new MarkdownCardsPlaceholderView(el)
-				.setShowStartButton(this.settings.showStartButtonInPlaceholder)
-				.setShowData(this.settings.showDataInPlaceholder);
+				.setMinify(this.settings.minifyCardPlaceholder);
 
 			new Promise(async (resolve, reject) => {
 				try {
