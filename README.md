@@ -6,7 +6,7 @@
 <img src="https://img.shields.io/badge/Obsidian-%23483699.svg?style=for-the-badge&logo=obsidian&logoColor=white" />
 <img src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white" /> 
 <img src="https://img.shields.io/static/v1?label=License&message=MIT&color=3DDC84&style=for-the-badge" /> 
-<img src="https://img.shields.io/static/v1?label=Version&message=0.2.2&color=3DDC84&style=for-the-badge" />
+<img src="https://img.shields.io/static/v1?label=Version&message=0.2.3&color=3DDC84&style=for-the-badge" />
 </p>
 
 <p>

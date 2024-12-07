@@ -149,12 +149,10 @@ export class QuizPageView extends PageView {
 			text: questionList[0]
 		})
 
-		for(let i = 1; i < questionList.length; i++) {
-			questionContainer.createEl("h3", {
-				cls: "normal-text",
-				text: questionList[i]
-			})
-		}
+		questionContainer.createEl("h4", {
+			cls: "normal-text",
+			text: questionList.length > 1 ? questionList.slice(1).join("; ") : ""
+		});
 
 		const bottomContainer = container.createDiv({
 			cls: "full-width flex-space-between-column padding-bottom-large"

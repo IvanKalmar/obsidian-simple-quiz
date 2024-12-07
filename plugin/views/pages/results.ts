@@ -32,6 +32,15 @@ export class ResultsPageView extends PageView{
 			cls: "full-width full-height flex-space-between-column "
 		});
 
+		const totalSuccess = this.quizResults.questions.map(question => question.result).reduce((acc, result) => {
+			return acc + (result ? 1 : 0);
+		}, 0);
+
+		container.createEl("h5", {
+			cls: "secondary-text",
+			text: `${totalSuccess} / ${this.quizResults.questions.length}`
+		});
+
 		let answersContainer = container.createDiv({
 			cls: "flex-fill full-width margin-medium padding-left-medium padding-bottom-small padding-right-medium " +
 				"static-height overflow-y container-style-border"
@@ -86,7 +95,7 @@ export class ResultsPageView extends PageView{
 
 			answersContainer.createEl("h5", {
 				cls: "disable-spacing margin-bottom-small margin-small secondary-text",
-				text: `[${answerList.join(", ")}]`
+				text: `[${answerList.join("; ")}]`
 			})
 
 			answersContainer.createEl("h5", {
