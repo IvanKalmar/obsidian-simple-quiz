@@ -14,7 +14,7 @@
 
 ## Summary:
 - Only manual input cards are supported;
-  - Support loading with js or by json;
+- Support loading with js or by json;
 - Works on mobile devices (Tested on android);
 - Can run the quiz directly in the note by using `quiz` markdown block.
 - Shows the current steak, the number of repeated cards and the number of quizzes for the day;
