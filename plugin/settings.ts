@@ -14,6 +14,7 @@ export interface SimpleQuizPluginSettings {
 	maximumCardNonRepetitionTime: number;
 
 	lowestCardThreshold: number;
+	successCardThreshold: number;
 
 	enableJS: boolean;
 
@@ -38,6 +39,7 @@ export const DEFAULT_SETTINGS: SimpleQuizPluginSettings = {
 	maximumCardNonRepetitionTime: 31 * 24 * 3600,
 
 	lowestCardThreshold: 0.2,
+	successCardThreshold: 0.8,
 
 	enableJS: false,
 
@@ -99,13 +101,24 @@ export class SimpleQuizSettingTab extends PluginSettingTab {
 
 		if(this.plugin.settings.saveResults) {
 			new Setting(containerEl)
-				.setName('Lowest cards rate threshold')
+				.setName('Cards rate failed threshold')
 				.addSlider(slider => slider
 					.setDynamicTooltip()
 					.setLimits(0, 1, 0.05)
 					.setValue(this.plugin.settings.lowestCardThreshold)
 					.onChange(async (value) => {
 						this.plugin.settings.lowestCardThreshold = value;
+						await this.plugin.saveSettings();
+					}));
+
+			new Setting(containerEl)
+				.setName('Cards rate success threshold')
+				.addSlider(slider => slider
+					.setDynamicTooltip()
+					.setLimits(0, 1, 0.05)
+					.setValue(this.plugin.settings.successCardThreshold)
+					.onChange(async (value) => {
+						this.plugin.settings.successCardThreshold = value;
 						await this.plugin.saveSettings();
 					}));
 

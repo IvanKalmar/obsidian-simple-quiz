@@ -31,8 +31,10 @@ export class GroupsController extends Controller {
 	_updateDefaultGroups() {
 		if(this.resultsController.enabled) {
 			this.defaultGroups = [
-				new Group("Cards from last quiz", this.resultsController.getLastFlashcardsIDs()),
-				new Group("Cards with lowest score", this.resultsController.getLowestScoreFlashcardsIDs())
+				new Group("Last quiz", this.resultsController.getLastFlashcardsIDs()),
+				new Group("Failed score", this.resultsController.getFailedScoreFlashcardsIDs()),
+				new Group("Middle score", this.resultsController.getMiddleScoreFlashcardsIds()),
+				new Group("Success score", this.resultsController.getSuccessScoreFlashcardsIds()),
 			]
 		}
 	}

@@ -36,8 +36,8 @@ export class ResultsPageView extends PageView{
 			return acc + (result ? 1 : 0);
 		}, 0);
 
-		container.createEl("h5", {
-			cls: "secondary-text",
+		container.createEl("h4", {
+			cls: "normal-text disable-spacing",
 			text: `${totalSuccess} / ${this.quizResults.questions.length}`
 		});
 
@@ -68,35 +68,52 @@ export class ResultsPageView extends PageView{
 			let answerList = question.side === FlashcardSide.LEFT
 				? question.flashcard.question.right : question.flashcard.question.left;
 
-			let anotherQuestions = questionList.slice(1).join(', ').trim();
-			if(anotherQuestions.length > 0) {
-				anotherQuestions = " - " + anotherQuestions;
-			}
-
-			startContainer.createEl("h3", {
-				cls: "normal-text",
-				text: `${questionList[0]}${anotherQuestions}`,
+			const questionTitle = startContainer.createEl("h3", {
+				cls: "normal-text flex-start",
+				text: questionList[0],
 			});
 
-			const successRate = Math.round(this.resultsController.getCardScore(question.flashcard.id) * 100);
+			let anotherQuestions = questionList.slice(1).join(', ').trim();
+			if(anotherQuestions.length > 0) {
+				const divider = questionTitle.createEl("span", {
+					cls: "small-icon gray-icon"
+				});
+				setIcon(divider, "dot")
 
-			let color = "error-text";
-			if(successRate > 20) {
-				color = "warning-text";
+				questionTitle.appendChild(
+					document.createTextNode(anotherQuestions)
+				);
 			}
-			if(successRate > 80) {
+
+			const successRate = this.resultsController.getCardScore(question.flashcard.id);
+
+			let color = "warning-text";
+			if(successRate < this.resultsController.lowestCardThreshold) {
+				color = "error-text";
+			} else if (successRate > this.resultsController.successCardThreshold) {
 				color = "success-text";
 			}
 
 			answerContainer.createEl("h4", {
-				text: `\t${successRate}%`,
+				text: `\t${Math.round(successRate * 100)}%`,
 				cls: color,
 			})
 
-			answersContainer.createEl("h5", {
-				cls: "disable-spacing margin-bottom-small margin-small secondary-text",
-				text: `[${answerList.join("; ")}]`
+			const answers = answersContainer.createEl("h5", {
+				cls: "flex-start disable-spacing margin-bottom-small margin-small secondary-text"
 			})
+			for(let j = 0; j < answerList.length; j++) {
+				answers.createSpan({
+					text: answerList[j]
+				});
+
+				if(j < (answerList.length - 1)) {
+					const divider = answers.createEl("span", {
+						cls: "small-icon transparent-icon"
+					});
+					setIcon(divider, "dot")
+				}
+			}
 
 			answersContainer.createEl("h5", {
 				cls: `disable-spacing margin-bottom-small margin-small ${question.answer ? "normal-text" : "warning-text"}`,

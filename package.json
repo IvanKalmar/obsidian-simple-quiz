@@ -1,6 +1,6 @@
 {
 	"name": "simple-quiz",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"description": "Creating simple quizzes.",
 	"main": "main.js",
 	"scripts": {

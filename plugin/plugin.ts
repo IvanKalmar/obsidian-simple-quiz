@@ -174,8 +174,6 @@ export default class SimpleQuizPlugin extends Plugin {
 				view.render();
 			});
 		}
-
-
 	}
 
 	async quizWithAllCards() {

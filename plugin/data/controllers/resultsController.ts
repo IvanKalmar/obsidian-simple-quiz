@@ -10,6 +10,7 @@ export class ResultsController extends Controller {
 	dataController: DataController;
 
 	lowestCardThreshold: number;
+	successCardThreshold: number;
 	minimumCardNonRepetitionTime: number;
 	maximumCardNonRepetitionTime: number;
 
@@ -21,6 +22,7 @@ export class ResultsController extends Controller {
 		this.enabled = this.plugin.settings.saveResults;
 
 		this.lowestCardThreshold = this.plugin.settings.lowestCardThreshold;
+		this.successCardThreshold = this.plugin.settings.successCardThreshold;
 		this.minimumCardNonRepetitionTime = this.plugin.settings.minimumCardNonRepetitionTime;
 		this.maximumCardNonRepetitionTime = this.plugin.settings.maximumCardNonRepetitionTime;
 
@@ -87,7 +89,7 @@ export class ResultsController extends Controller {
 		await this.dataController.saveResultsObject(this.data);
 	}
 
-	getLowestScoreFlashcardsIDs(): string[] {
+	getFailedScoreFlashcardsIDs(): string[] {
 		return Object.keys(this.data.flashcards)
 			.map(flashcardID => {
 				return {
@@ -96,6 +98,34 @@ export class ResultsController extends Controller {
 				}
 			}).filter(flashcardData => {
 				return flashcardData.score < this.lowestCardThreshold;
+			}).map(flashcardData => {
+				return flashcardData.flashcardID;
+			});
+	}
+
+	getMiddleScoreFlashcardsIds(): string[] {
+		return Object.keys(this.data.flashcards)
+			.map(flashcardID => {
+				return {
+					flashcardID: flashcardID,
+					score: this.getCardScore(flashcardID)
+				}
+			}).filter(flashcardData => {
+				return (this.lowestCardThreshold < flashcardData.score) && (flashcardData.score < this.successCardThreshold);
+			}).map(flashcardData => {
+				return flashcardData.flashcardID;
+			});
+	}
+
+	getSuccessScoreFlashcardsIds(): string[] {
+		return Object.keys(this.data.flashcards)
+			.map(flashcardID => {
+				return {
+					flashcardID: flashcardID,
+					score: this.getCardScore(flashcardID)
+				}
+			}).filter(flashcardData => {
+				return this.successCardThreshold < flashcardData.score;
 			}).map(flashcardData => {
 				return flashcardData.flashcardID;
 			});
@@ -217,7 +247,11 @@ export class ResultsController extends Controller {
 			}
 		}
 
-		return score < 0 ? 0 : (score > 1 ? 1 : score);
+		score = score < 0 ? 0 : (score > 1 ? 1 : score);
+		score = (Math.floor(score / 0.05) * 0.05) +
+			(Math.round((score * 100) % (0.05 * 100)) / 100 >= 0.03 ? 0.05 : 0);
+
+		return score;
 	}
 
 	async setEnabled(enabled: boolean) {

@@ -135,7 +135,7 @@ export class QuizPageView extends PageView {
 
 	async renderQuestion(container: HTMLElement, question: QuizQuestion, questionsCount: number, currentQuestion: number) {
 		container.createEl("h5", {
-			cls: "secondary-text",
+			cls: "secondary-text disable-spacing",
 			text: `${currentQuestion} / ${questionsCount}`
 		})
 		let questionList = question.side === FlashcardSide.LEFT
@@ -146,11 +146,12 @@ export class QuizPageView extends PageView {
 		});
 
 		questionContainer.createEl("h2", {
+			cls: "only-top-margin",
 			text: questionList[0]
 		})
 
 		questionContainer.createEl("h4", {
-			cls: "normal-text",
+			cls: "only-top-margin normal-text",
 			text: questionList.length > 1 ? questionList.slice(1).join("; ") : ""
 		});
 

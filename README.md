@@ -1,18 +1,30 @@
 <p align="center">
-<img src="images/header.svg" style="width: 90%;">
+<img src="documentation/media/header.svg" style="width: 90%;">
 </p>
 
 <p align="center">
 <img src="https://img.shields.io/badge/Obsidian-%23483699.svg?style=for-the-badge&logo=obsidian&logoColor=white" />
 <img src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white" /> 
 <img src="https://img.shields.io/static/v1?label=License&message=MIT&color=3DDC84&style=for-the-badge" /> 
-<img src="https://img.shields.io/static/v1?label=Version&message=0.2.3&color=3DDC84&style=for-the-badge" />
+<img src="https://img.shields.io/static/v1?label=Version&message=0.2.4&color=3DDC84&style=for-the-badge" />
 </p>
 
-<p>
-Spaced repetition using flashcards.<br/>
-Currently, only manual input cards are supported.
+### Spaced repetition using flashcards.
+#### Work in progress
+
+## Summary:
+- Only manual input cards are supported;
+  - Support loading with js or by json;
+- Works on mobile devices (Tested on android);
+- Can run the quiz directly in the note by using `quiz` markdown block.
+- Shows the current steak, the number of repeated cards and the number of quizzes for the day;
+
+
+## Demo
+<p align="center">
+<img src="documentation/media/demo.gif" style="width: 70%;">
 </p>
+Recorded in tables example
 
 ## Card fields
 ```json5 
@@ -71,8 +83,6 @@ fc.commit();
 ```
 ~~~
 
-### <b>See more at [examples](examples/Example)</b>
-
 
 ## Running quiz
 There are several ways to start a quiz:
@@ -87,6 +97,11 @@ Depending on where the quiz was launched from, the set of cards will be differen
 3. If start from `quiz` markdown block, by default  it will load all possible cards, but you can customize with `sources` argument;
 
 If saving results is enabled, the cards will be sorted by success, otherwise they will be randomly mixed.
+
+
+## More
+[Markdown blocks description](documentation/MarkdownBlocks.md) <br/>
+[Examples of usage](documentation/examples/Example.md)
 
 
 ## Manually installing the plugin

@@ -29,7 +29,7 @@ function kanjiToCard(kanji, pool) {
 
 
 (async () => {
-	const kanjiJSONFile = app.vault.getAbstractFileByPath("kanji.json");
+	const kanjiJSONFile = app.vault.getAbstractFileByPath("data/kanji.json");
 	const kanji = JSON.parse(await app.vault.read(kanjiJSONFile));
 	
 	
