@@ -1,5 +1,5 @@
 import {DataController} from "./dataController";
-import {ResultsController} from "./resultsController";
+import {FlashcardStatus, ResultsController} from "./resultsController";
 import {Controller} from "./controller";
 import {getStringHashCode} from "../../utils";
 
@@ -32,9 +32,9 @@ export class GroupsController extends Controller {
 		if(this.resultsController.enabled) {
 			this.defaultGroups = [
 				new Group("Last quiz", this.resultsController.getLastFlashcardsIDs()),
-				new Group("Failed score", this.resultsController.getFailedScoreFlashcardsIDs()),
-				new Group("Middle score", this.resultsController.getMiddleScoreFlashcardsIds()),
-				new Group("Success score", this.resultsController.getSuccessScoreFlashcardsIds()),
+				new Group("Failed score", this.resultsController.getFlashcardsIDsByStatus(FlashcardStatus.FAILED)),
+				new Group("Middle score", this.resultsController.getFlashcardsIDsByStatus(FlashcardStatus.MIDDLE)),
+				new Group("Success score", this.resultsController.getFlashcardsIDsByStatus(FlashcardStatus.SUCCESS)),
 			]
 		}
 	}

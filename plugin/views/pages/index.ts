@@ -28,6 +28,11 @@ export class IndexPageView extends PageView {
 		return this;
 	}
 
+	setQuestionsCount(questionsCount: number): this {
+		this.count = questionsCount;
+		return this;
+	}
+
 	_start() {
 		if((this.count == 0) || (this.flashcardsManager.getSelectedCount() == 0)) {
 			new Notice("At least one flashcard must be selected");
@@ -120,11 +125,12 @@ export class IndexPageView extends PageView {
 		const groups: SelectListItems[]  = this.flashcardsManager.getGroups()
 			.map(group => ({text: group.title, value: group.id}));
 
-		addButton("Groups", false, true, groups,
+		const groupsButton = addButton("Groups", false, true, groups,
 			this.flashcardsManager.selectedGroups, (selectedGroups) => {
 				this.flashcardsManager.updateSelectedGroups(selectedGroups);
 				selectedCount.setText(this.flashcardsManager.getSelectedCount().toString());
-		}).trigger("click");
+		});
+		groupsButton.dispatchEvent(new Event("click"));
 
 		addButton("Flashcards", false, true, flashcards,
 			this.flashcardsManager.selectedFlashcards, (selectedFlashcards) => {

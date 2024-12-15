@@ -1,5 +1,4 @@
 // For filtering arrays
-
 export function isNotEmpty<Any>(value: Any | null | undefined): value is Any {
 	// https://stackoverflow.com/questions/43118692/typescript-filter-out-nulls-from-an-array
 
@@ -7,13 +6,7 @@ export function isNotEmpty<Any>(value: Any | null | undefined): value is Any {
 }
 
 // Flashcards auto id
-/**
- * Returns a hash code from a string
- * @param  {String} str The string to hash.
- * @return {Number}    A 32bit integer
- * @see http://werxltd.com/wp/2010/05/13/javascript-implementation-of-javas-string-hashcode-method/
- */
-export function getStringHashCode(str: string) {
+export function getStringHashCode(str: string): number {
 	// https://stackoverflow.com/questions/6122571/simple-non-secure-hash-function-for-javascript
 	let hash = 0;
 	for (let i = 0, len = str.length; i < len; i++) {
@@ -55,25 +48,12 @@ export function getDateStartTimestamp(d: Date = new Date()): number {
 	return Math.floor(+ dateCopy / 1000);
 }
 
-export function getWeekDates(date: Date) {
-	let dateCopy = new Date(date);
 
-	const day = dateCopy.getDay();
-	const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+// Colors
 
-	dateCopy.setDate(diff);
-	dateCopy.setHours(0);
-	dateCopy.setMinutes(0);
-	dateCopy.setSeconds(0);
-	dateCopy.setMilliseconds(0);
-
-	return [
-		new Date(dateCopy),
-		new Date(+dateCopy + 1 * 24 * 3600 * 1000),
-		new Date(+dateCopy + 2 * 24 * 3600 * 1000),
-		new Date(+dateCopy + 3 * 24 * 3600 * 1000),
-		new Date(+dateCopy + 4 * 24 * 3600 * 1000),
-		new Date(+dateCopy + 5 * 24 * 3600 * 1000),
-		new Date(+dateCopy + 6 * 24 * 3600 * 1000),
-	]
+export function addAlphaToHex(color: string, opacity: number) {
+	// https://stackoverflow.com/questions/19799777/how-to-add-transparency-information-to-a-hex-color-code
+	// coerce values, so it is between 0 and 1.
+	let _opacity = Math.round(Math.min(Math.max(opacity ?? 1, 0), 1) * 255);
+	return color + _opacity.toString(16).toUpperCase();
 }

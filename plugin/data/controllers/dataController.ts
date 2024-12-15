@@ -5,7 +5,7 @@ import {Controller} from "./controller";
 function getFilesFromPaths(vault: Vault, paths: string[]): TFile[] {
 	let files: TFile[] = [];
 
-	paths.forEach(path => {
+	for (const path of paths) {
 		const abstractFile = vault.getAbstractFileByPath(path);
 
 		if(abstractFile instanceof TFile) {
@@ -15,7 +15,7 @@ function getFilesFromPaths(vault: Vault, paths: string[]): TFile[] {
 		if(abstractFile instanceof TFolder) {
 			files = [...files, ...getFilesFromPaths(vault, abstractFile.children.map(af => af.path))]
 		}
-	})
+	}
 
 	return files;
 }
@@ -25,7 +25,6 @@ export class DataController extends Controller {
 
 	pluginFolder: string;
 	resultsFile: string;
-	lastFile: string;
 
 	async load(): Promise<void> {
 		this.app = this.plugin.app;
@@ -33,11 +32,23 @@ export class DataController extends Controller {
 		this.pluginFolder = normalizePath(this.app.vault.configDir + "/plugins/simple-quiz");
 
 		this.resultsFile = normalizePath(this.pluginFolder + "/results.json");
-		this.lastFile = normalizePath(this.pluginFolder + "/last.json");
 	}
 
 	async getAllData(filesList: string[] | null = null): Promise<ParserResult> {
-		const files = filesList == null ? this.app.vault.getFiles() : getFilesFromPaths(this.app.vault, filesList);
+		let files = null;
+		if(filesList) {
+			filesList = filesList
+				.map(path => path.trim())
+				.filter(path => path.length > 0)
+				.map(path => normalizePath(path))
+			if(filesList.length > 0) {
+				files = getFilesFromPaths(this.app.vault, filesList)
+			}
+		}
+
+		if(!files) {
+			files = this.app.vault.getFiles();
+		}
 
 		let parseResult = new ParserResult([], []);
 		for(const file of files) {

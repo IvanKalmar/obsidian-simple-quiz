@@ -1,23 +1,23 @@
 import {View} from "./view";
-import {StreakDayStatus, TodayResults} from "../data/controllers/resultsController";
+import {StreakDayStatus, TodayProgression, WeekProgression} from "../data/controllers/resultsController";
 import {setIcon} from "obsidian";
 
 export class StreakView extends View {
-	todayResults: TodayResults
+	weekStreak: WeekProgression;
 
-	setTodayResults(todayResults: TodayResults): this {
-		this.todayResults = todayResults;
+	setWeekStreak(weekStreak: WeekProgression): this {
+		this.weekStreak = weekStreak;
 		return this;
 	}
 
 	render() {
 		let streakContainer = this.container.createDiv({
-			cls: "streak-container"
+			cls: "flex-space-evenly",
 		});
 
-		for (const streakDay of this.todayResults.streakDays) {
+		for (const streakDay of this.weekStreak.days) {
 			let streakDayContainer = streakContainer.createDiv({
-				cls: "streak-container-item"
+				cls: "flex-center-column"
 			});
 
 			let dayIconClass = "streak-day-icon margin-bottom-small";

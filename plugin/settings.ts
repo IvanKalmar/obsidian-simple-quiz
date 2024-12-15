@@ -6,6 +6,7 @@ export interface SimpleQuizPluginSettings {
 	dataJSONTag: string;
 	dataJSTag: string;
 	todayTag: string;
+	chartsTag: string;
 
 	indexing: boolean;
 	saveResults: boolean;
@@ -31,6 +32,7 @@ export const DEFAULT_SETTINGS: SimpleQuizPluginSettings = {
 	dataJSONTag: "quizjson",
 	dataJSTag: "quizjs",
 	todayTag: "quiztoday",
+	chartsTag: "quizcharts",
 
 	indexing: true,
 	saveResults: true,
@@ -233,6 +235,15 @@ export class SimpleQuizSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.todayTag)
 					.onChange(async (value) => {
 						this.plugin.settings.todayTag = value;
+						await this.plugin.saveSettings();
+					}));
+
+			new Setting(containerEl)
+				.setName('Progression charts tag')
+				.addText(text => text
+					.setValue(this.plugin.settings.chartsTag)
+					.onChange(async (value) => {
+						this.plugin.settings.chartsTag = value;
 						await this.plugin.saveSettings();
 					}));
 		}

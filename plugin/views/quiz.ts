@@ -74,6 +74,9 @@ export class QuizView extends View {
 		indexPage.setOnQuizStart((quizArguments) => {
 			container.empty();
 
+			indexPage
+				.setQuestionsCount(quizArguments.questionsCount);
+
 			quizPage
 				.setQuizArguments(quizArguments)
 				.render();

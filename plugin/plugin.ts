@@ -10,6 +10,7 @@ import {MarkdownQuizView, MarkdownQuizViewSettings} from "./views/markdown/quiz"
 import {Flashcard} from "./data/flashcard";
 import {GroupsController} from "./data/controllers/groupsController";
 import {QuizViewSettings} from "./views/quiz";
+import {MarkdownChartsView, MarkdownChartsViewSettings} from "./views/markdown/charts";
 
 
 export default class SimpleQuizPlugin extends Plugin {
@@ -83,12 +84,9 @@ export default class SimpleQuizPlugin extends Plugin {
 
 				let results = new MarkdownTodayView(el_)
 					.setSettings(Object.assign(new MarkdownTodayViewSettings(), settings))
+					.setDataController(this.dataController)
 					.setResultsController(this.resultsController)
 					.setOnOpen(() => { this.quizWithAllCards(); });
-
-				if(this.resultsController) {
-					results.setResultsController(this.resultsController)
-				}
 
 				results.render();
 			});
@@ -96,6 +94,29 @@ export default class SimpleQuizPlugin extends Plugin {
 		// Today json highlighting
 		window.CodeMirror.defineMode(
 			this.settings.todayTag,
+			config => window.CodeMirror.getMode(config, "application/json")
+		);
+
+
+		// Charts tag
+		this.registerMarkdownCodeBlockProcessor(
+			this.settings.chartsTag, (source_: string, el_: HTMLElement, ctx_: MarkdownPostProcessorContext) => {
+				let settings = {};
+				try {
+					settings = JSON.parse(source_);
+				} catch (e) { }
+
+				let charts = new MarkdownChartsView(el_)
+					.setSettings(Object.assign(new MarkdownChartsViewSettings(), settings))
+					.setDataController(this.dataController)
+					.setResultsController(this.resultsController);
+
+				charts.render();
+			});
+
+		// Charts json highlighting
+		window.CodeMirror.defineMode(
+			this.settings.chartsTag,
 			config => window.CodeMirror.getMode(config, "application/json")
 		);
 
@@ -136,6 +157,7 @@ export default class SimpleQuizPlugin extends Plugin {
 
 
 		this.addSettingTab(new SimpleQuizSettingTab(this.app, this));
+
 
 		this.addRibbonIcon(
 			'play',

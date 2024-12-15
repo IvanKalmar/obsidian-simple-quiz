@@ -2,22 +2,33 @@ import {ResultsController} from "../../data/controllers/resultsController";
 import {setIcon} from "obsidian";
 import {MarkdownBase} from "./base";
 import {StreakView} from "../streak";
+import {DataController} from "../../data/controllers/dataController";
+
 
 export class MarkdownTodayViewSettings {
 	minify: boolean = false;
 	hideCounters: boolean = false;
 }
 
+
 export class MarkdownTodayView extends MarkdownBase {
+	dataController: DataController;
 	resultsController: ResultsController;
 
 	showStartButton: boolean = false;
 
+	sources: string[] | null = null;
 	minify: boolean = false;
 	hideCounters: boolean = false;
+	hideCharts: boolean = false;
 
 	setResultsController(resultsController: ResultsController) {
 		this.resultsController = resultsController;
+		return this;
+	}
+
+	setDataController(dataController: DataController) {
+		this.dataController = dataController;
 		return this;
 	}
 
@@ -33,7 +44,10 @@ export class MarkdownTodayView extends MarkdownBase {
 			return;
 		}
 
-		const todayResults = this.resultsController.getTodayResults();
+		const statistics = this.resultsController.getStatistics();
+		if(!statistics) {
+			return;
+		}
 
 		let baseContainer = this.getBaseContainer(
 			this.minify,
@@ -59,9 +73,9 @@ export class MarkdownTodayView extends MarkdownBase {
 		}
 
 		if(!this.hideCounters) {
-			renderIcon("calendar-check-2", todayResults.streak.toString());
-			renderIcon("gallery-horizontal-end", todayResults.cardsToday.toString());
-			renderIcon("dices", todayResults.quizzesToday.toString());
+			renderIcon("calendar-check-2", statistics.today.streak.toString());
+			renderIcon("gallery-horizontal-end", statistics.today.cardsToday.toString());
+			renderIcon("dices", statistics.today.quizzesToday.toString());
 		}
 
 		if(!this.minify) {
@@ -70,8 +84,10 @@ export class MarkdownTodayView extends MarkdownBase {
 			})
 		}
 
-		new StreakView(baseContainer.container)
-			.setTodayResults(todayResults)
-			.render();
+		new StreakView(baseContainer.container.createDiv({
+			cls: "margin-top-large margin-bottom-large"
+		})).setWeekStreak(statistics.week).render();
 	}
 }
+
+

@@ -68,7 +68,10 @@ export abstract class MarkdownBase extends View {
 		if(hideSecondaryTitle) { secondaryTitle.remove(); }
 		if(hideActionsContainer) { actionsContainer.remove(); }
 
-		return new MarkdownBaseContainer(icon, primaryTitle, secondaryTitle, actionsContainer, container);
+		return new MarkdownBaseContainer(
+			icon, primaryTitle, secondaryTitle,
+			actionsContainer, container
+		);
 	}
 
 	createStartIcon(container: HTMLElement, onClick: () => void) {

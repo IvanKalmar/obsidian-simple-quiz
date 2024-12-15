@@ -1,6 +1,18 @@
 ```quiztoday
 {
+	"sources": [
+		"test"
+	],
 	"minify": true
+}
+```
+
+```quizcharts
+{
+	"minify": true,
+	"sources": [
+		"test/"
+	]
 }
 ```
 

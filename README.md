@@ -6,11 +6,11 @@
 <img src="https://img.shields.io/badge/Obsidian-%23483699.svg?style=for-the-badge&logo=obsidian&logoColor=white" />
 <img src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white" /> 
 <img src="https://img.shields.io/static/v1?label=License&message=MIT&color=3DDC84&style=for-the-badge" /> 
-<img src="https://img.shields.io/static/v1?label=Version&message=0.2.4&color=3DDC84&style=for-the-badge" />
+<img src="https://img.shields.io/static/v1?label=Version&message=0.2.5&color=3DDC84&style=for-the-badge" />
+<img src="https://img.shields.io/static/v1?label=Status&message=Unstable&color=yellow&style=for-the-badge" />
 </p>
 
-### Spaced repetition using flashcards.
-#### Work in progress
+## Spaced repetition using flashcards
 
 ## Summary:
 - Only manual input cards are supported;
@@ -18,13 +18,13 @@
 - Works on mobile devices (Tested on android);
 - Can run the quiz directly in the note by using `quiz` markdown block.
 - Shows the current steak, the number of repeated cards and the number of quizzes for the day;
+- Shows charts with month, year, and cards progression;
 
 
 ## Demo
 <p align="center">
 <img src="documentation/media/demo.gif" style="width: 70%;">
 </p>
-Recorded in tables example
 
 ## Card fields
 ```json5 
@@ -42,7 +42,9 @@ Recorded in tables example
 ```
 
 ## Definition
-### JSON
+<details>
+<summary><b>JSON</b></summary>
+
 ~~~
 ```quizjson
 [
@@ -59,11 +61,15 @@ Recorded in tables example
 ```
 ~~~
 
-### JS
+</details>
+
+<details>
+<summary><b>JS</b></summary>
+
 Must be enabled from settings. <br/>
 In the code `fc` object is available with two methods:
 - `addCard(flashcard);` - Adds a card, if it is not valid performs an exception.
- - `commit();` - Must be called after all cards have been added.
+- `commit();` - Must be called after all cards have been added.
 
 ~~~
 ```quizjs
@@ -82,6 +88,10 @@ for(let i = 0; i < 100; i++) {
 fc.commit();
 ```
 ~~~
+
+</details>
+
+
 
 
 ## Running quiz
@@ -114,4 +124,7 @@ Copy over `main.js`, `styles.css`, `manifest.json`, to `<vault>/.obsidian/plugin
   - [ ] Matching cards
   - [ ] Option select cards
 - [ ] Add images to cards
-- [ ] Add statistics charts  
+
+
+## Third-party libraries
+[Chart.js](https://github.com/chartjs/Chart.js)

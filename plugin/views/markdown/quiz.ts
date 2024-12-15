@@ -10,7 +10,6 @@ import {GroupsController} from "../../data/controllers/groupsController";
 export class MarkdownQuizViewSettings {
 	sources: string[] | null = null;
 	hideTitle: boolean = false;
-	hideButtons: string[]  = [];
 }
 
 export class MarkdownQuizView extends MarkdownBase {
