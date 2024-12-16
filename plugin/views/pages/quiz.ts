@@ -150,10 +150,22 @@ export class QuizPageView extends PageView {
 			text: questionList[0]
 		})
 
-		questionContainer.createEl("h4", {
-			cls: "only-top-margin normal-text",
-			text: questionList.length > 1 ? questionList.slice(1).join("; ") : ""
+		const additionalQuestions = questionContainer.createEl("h4", {
+			cls: "only-top-margin normal-text flex-center flex-wrap"
 		});
+
+		for (let i = 1; i < questionList.length; i++){
+			additionalQuestions.createEl("span", {
+				text: questionList[i]
+			});
+
+			if(i < questionList.length - 1){
+				const divider = additionalQuestions.createEl("span", {
+					cls: "small-icon gray-icon"
+				});
+				setIcon(divider, "dot")
+			}
+		}
 
 		const bottomContainer = container.createDiv({
 			cls: "full-width flex-space-between-column padding-bottom-large"

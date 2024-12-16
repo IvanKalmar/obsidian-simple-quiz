@@ -79,6 +79,20 @@ export class ResultsController extends Controller {
 		return this.roundScore(score);
 	}
 
+	getCardLastQuizTimestamp(flashcardID: string): number {
+		const now = round((+ new Date()) / 1000);
+
+		if(!this.enabled) {
+			return now;
+		}
+
+		if(!this.data.flashcards.hasOwnProperty(flashcardID)) {
+			return now;
+		}
+
+		return this.data.flashcards[flashcardID].lastQuizAt;
+	}
+
 	getLastFlashcardsIDs(): string[] {
 		return this.data.last;
 	}

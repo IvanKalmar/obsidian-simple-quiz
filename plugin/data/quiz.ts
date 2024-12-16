@@ -23,7 +23,8 @@ export class Quiz {
 			flashcards = flashcards.map(flashcard => {
 				return {
 					flashcard: flashcard,
-					score: this.resultsController.getCardScore(flashcard.id)
+					score: this.resultsController.getCardScore(flashcard.id),
+					lastQuizAt: this.resultsController.getCardLastQuizTimestamp(flashcard.id)
 				}
 			}).sort((a, b) => {
 				if (a.score < b.score) {
@@ -31,6 +32,13 @@ export class Quiz {
 				} else if (a.score > b.score) {
 					return 1;
 				}
+
+				if(a.lastQuizAt < b.lastQuizAt) {
+					return 1;
+				} else if(a.lastQuizAt > b.lastQuizAt) {
+					return -1;
+				}
+
 				return 0;
 			}).map(flashcard => {
 				return flashcard.flashcard;

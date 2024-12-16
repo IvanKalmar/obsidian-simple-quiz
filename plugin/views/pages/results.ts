@@ -32,9 +32,11 @@ export class ResultsPageView extends PageView{
 			cls: "full-width full-height flex-space-between-column "
 		});
 
-		const totalSuccess = this.quizResults.questions.map(question => question.result).reduce((acc, result) => {
-			return acc + (result ? 1 : 0);
-		}, 0);
+		const totalSuccess = this.quizResults.questions
+			.map(question => question.result)
+			.reduce((acc, result) => {
+				return acc + (result ? 1 : 0);
+			}, 0);
 
 		container.createEl("h4", {
 			cls: "normal-text disable-spacing",
@@ -46,8 +48,23 @@ export class ResultsPageView extends PageView{
 				"static-height overflow-y container-style-border"
 		});
 
-		for (let i = 0; i < this.quizResults.questions.length; i++){
-			const question = this.quizResults.questions[i];
+		const questions = this.quizResults.questions.map(question => {
+			return {
+				question: question,
+				score: this.resultsController.getCardScore(question.flashcard.id)
+			}
+		}).sort((a, b) => {
+			if (a.score < b.score) {
+				return -1;
+			} else if (a.score > b.score) {
+				return 1;
+			}
+			return 0;
+		});
+
+		for (let i = 0; i < questions.length; i++){
+			const question = questions[i].question;
+			const score = questions[i].score;
 
 			let answerContainer = answersContainer.createDiv({
 				cls: `flex-space-between ${i == 0 ? "" : "margin-top-large"}`
@@ -68,42 +85,50 @@ export class ResultsPageView extends PageView{
 			let answerList = question.side === FlashcardSide.LEFT
 				? question.flashcard.question.right : question.flashcard.question.left;
 
-			const questionTitle = startContainer.createEl("h3", {
+			startContainer.createEl("h2", {
 				cls: "normal-text flex-start",
 				text: questionList[0],
 			});
 
-			let anotherQuestions = questionList.slice(1).join(', ').trim();
-			if(anotherQuestions.length > 0) {
-				const divider = questionTitle.createEl("span", {
-					cls: "small-icon gray-icon"
+			if(questionList.length > 1) {
+				const anotherQuestionsContainer = answersContainer.createDiv({
+					cls: "flex-start flex-wrap margin-bottom-small normal-text"
 				});
-				setIcon(divider, "dot")
 
-				questionTitle.appendChild(
-					document.createTextNode(anotherQuestions)
-				);
+				for (let j = 1; j < questionList.length; j++){
+					anotherQuestionsContainer.createEl("h4", {
+						cls: "normal-text disable-spacing",
+						text: questionList[j]
+					});
+
+					if(j < questionList.length - 1) {
+						const divider = anotherQuestionsContainer.createEl("span", {
+							cls: "small-icon gray-icon"
+						});
+						setIcon(divider, "dot")
+					}
+				}
 			}
 
-			const successRate = this.resultsController.getCardScore(question.flashcard.id);
-
 			let color = "warning-text";
-			if(successRate < this.resultsController.lowestCardThreshold) {
+			if(score < this.resultsController.lowestCardThreshold) {
 				color = "error-text";
-			} else if (successRate > this.resultsController.successCardThreshold) {
+			} else if (score > this.resultsController.successCardThreshold) {
 				color = "success-text";
 			}
 
 			answerContainer.createEl("h4", {
-				text: `\t${Math.round(successRate * 100)}%`,
+				text: `\t${Math.round(score * 100)}%`,
 				cls: color,
 			})
 
-			const answers = answersContainer.createEl("h5", {
-				cls: "flex-start disable-spacing margin-bottom-small margin-small secondary-text"
+			const answers = answersContainer.createEl("div", {
+				cls: "flex-start flex-wrap margin-bottom-small secondary-text"
 			})
+
 			for(let j = 0; j < answerList.length; j++) {
-				answers.createSpan({
+				answers.createEl("h5", {
+					cls: "secondary-text disable-spacing",
 					text: answerList[j]
 				});
 
@@ -116,7 +141,7 @@ export class ResultsPageView extends PageView{
 			}
 
 			answersContainer.createEl("h5", {
-				cls: `disable-spacing margin-bottom-small margin-small ${question.answer ? "normal-text" : "warning-text"}`,
+				cls: `disable-spacing ${question.answer ? "success-text" : "warning-text"}`,
 				text: question.answer ? question.answer : "..."
 			})
 		}
