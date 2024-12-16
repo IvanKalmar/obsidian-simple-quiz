@@ -141,7 +141,7 @@ export class ResultsPageView extends PageView{
 			}
 
 			answersContainer.createEl("h5", {
-				cls: `disable-spacing ${question.answer ? "success-text" : "warning-text"}`,
+				cls: `disable-spacing ${question.answer ? "normal-text" : "warning-text"}`,
 				text: question.answer ? question.answer : "..."
 			})
 		}

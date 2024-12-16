@@ -59,6 +59,7 @@ export class QuizView extends View {
 		})
 
 		const indexPage = new IndexPageView(container)
+			.setResultsController(this.resultsController)
 			.setGroupsController(this.groupsController)
 			.setFlashcardsManager(this.flashcardsManager);
 

@@ -5,9 +5,11 @@ import {SelectListItems, SelectListView} from "../selectList";
 import {FlashcardsManager} from "../../data/flashcardsManager";
 import {QuizArguments} from "../../data/quiz";
 import {GroupsController} from "../../data/controllers/groupsController";
+import {FlashcardStatus, ResultsController} from "../../data/controllers/resultsController";
 
 export class IndexPageView extends PageView {
 	groupsController: GroupsController;
+	resultsController: ResultsController;
 
 	flashcardsManager: FlashcardsManager;
 	count: number = 5;
@@ -15,6 +17,11 @@ export class IndexPageView extends PageView {
 
 	setGroupsController(groupsController: GroupsController) {
 		this.groupsController = groupsController;
+		return this;
+	}
+
+	setResultsController(resultsController: ResultsController) {
+		this.resultsController = resultsController;
 		return this;
 	}
 
@@ -52,6 +59,27 @@ export class IndexPageView extends PageView {
 		const quizSettingsHeader = mainContainer.createDiv( {
 			cls: "full-width flex-center",
 		});
+
+		const selectedStatus = quizSettingsHeader.createSpan({
+			cls: "flex-center-column"
+		});
+		const failedCardsCount = selectedStatus.createEl("p", {
+			cls: "error-text disable-spacing",
+			text: "0"
+		});
+		const mediumCardsCount = selectedStatus.createEl("p", {
+			cls: "warning-text disable-spacing",
+			text: "0"
+		});
+		const successCardsCount = selectedStatus.createEl("p", {
+			cls: "success-text disable-spacing",
+			text: "0"
+		});
+
+		setIcon(quizSettingsHeader.createSpan({
+			cls: "medium-icon transparent-icon margin-right-medium margin-left-medium",
+		}), "ellipsis-vertical");
+
 		const flashcardsCountContainer = quizSettingsHeader.createDiv({
 			cls: "flex-center margin-right-medium"
 		});
@@ -125,32 +153,66 @@ export class IndexPageView extends PageView {
 		const groups: SelectListItems[]  = this.flashcardsManager.getGroups()
 			.map(group => ({text: group.title, value: group.id}));
 
+		const updateSelected = () => {
+			const flashcards = this.flashcardsManager.getQuizFlashcards();
+			selectedCount.setText(flashcards.length.toString());
+
+			let failed = 0;
+			let middle = 0;
+			let success = 0;
+
+			flashcards.forEach(flashcard => {
+				switch (this.resultsController.getCardStatus(flashcard.id)) {
+					case FlashcardStatus.SUCCESS: {
+						success++;
+						break;
+					}
+					case FlashcardStatus.MIDDLE: {
+						middle++;
+						break;
+					}
+					case FlashcardStatus.FAILED: {
+						failed++;
+						break;
+					}
+				}
+			});
+
+			failedCardsCount.setText(failed.toString());
+			mediumCardsCount.setText(middle.toString());
+			successCardsCount.setText(success.toString());
+		}
+
 		const groupsButton = addButton("Groups", false, true, groups,
 			this.flashcardsManager.selectedGroups, (selectedGroups) => {
 				this.flashcardsManager.updateSelectedGroups(selectedGroups);
-				selectedCount.setText(this.flashcardsManager.getSelectedCount().toString());
+				updateSelected();
 		});
 		groupsButton.dispatchEvent(new Event("click"));
 
 		addButton("Flashcards", false, true, flashcards,
 			this.flashcardsManager.selectedFlashcards, (selectedFlashcards) => {
 				this.flashcardsManager.updateSelectedFlashcardsIDs(selectedFlashcards);
-				selectedCount.setText(this.flashcardsManager.getSelectedCount().toString());
+				updateSelected();
 		});
 
 		addButton("Pools", false, true, pools,
 			this.flashcardsManager.selectedPools, (selectedPools) => {
 				this.flashcardsManager.updateSelectedPools(selectedPools);
-				selectedCount.setText(this.flashcardsManager.getSelectedCount().toString());
+				updateSelected();
 		});
 
 		addButton("Tags", false, false, tags,
 			this.flashcardsManager.selectedTags, (selectedTags) => {
 				this.flashcardsManager.updateSelectedTags(selectedTags);
-				selectedCount.setText(this.flashcardsManager.getSelectedCount().toString());
+				updateSelected();
 		});
 
 		clearIcon.on("click", "span", () => {
+			failedCardsCount.setText("0");
+			mediumCardsCount.setText("0");
+			successCardsCount.setText("0");
+
 			selectedCount.setText("0");
 			this.flashcardsManager.reset();
 			selectListView.empty();

@@ -4,12 +4,14 @@ import {QuizResult} from "../quiz";
 import {getDateStartTimestamp, round} from "../../utils";
 import {Controller} from "./controller";
 import {Notice} from "obsidian";
+import {Flashcard} from "../flashcard";
 
 
 export enum FlashcardStatus {
 	SUCCESS = "SUCCESS",
 	MIDDLE = "MIDDLE",
-	FAILED = "FAILED"
+	FAILED = "FAILED",
+	EMPTY = "EMPTY"
 }
 
 
@@ -59,10 +61,11 @@ export class ResultsController extends Controller {
 			return -1;
 		}
 
-		let score = 0;
 		if(!this.data.flashcards.hasOwnProperty(flashcardID)) {
-			return score;
+			return -1;
 		}
+
+		let score = 0;
 
 		let data = this.data.flashcards[flashcardID];
 		if(data) {
@@ -77,6 +80,26 @@ export class ResultsController extends Controller {
 		}
 
 		return this.roundScore(score);
+	}
+
+	getCardStatus(flashcardID: string): FlashcardStatus {
+		if(!this.enabled) {
+			return FlashcardStatus.EMPTY;
+		}
+
+		if(!this.data.flashcards.hasOwnProperty(flashcardID)) {
+			return FlashcardStatus.EMPTY;
+		}
+
+		const score = this.getCardScore(flashcardID);
+
+		if(score >= this.successCardThreshold) {
+			return FlashcardStatus.SUCCESS;
+		} else if (score <= this.lowestCardThreshold) {
+			return FlashcardStatus.FAILED;
+		}
+
+		return FlashcardStatus.MIDDLE;
 	}
 
 	getCardLastQuizTimestamp(flashcardID: string): number {
