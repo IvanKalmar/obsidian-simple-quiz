@@ -426,6 +426,24 @@
 	align-items: center;
 }
 
+.grid-3-col {
+	display: grid;
+	grid-template-columns: 42.5% 15% 42.5%;
+	align-items: center;
+}
+
+.justify-self-center {
+	justify-self: center;
+}
+
+.justify-self-start {
+	justify-self: start;
+}
+
+.justify-self-end {
+	justify-self: end;
+}
+
 
 .full-width {
 	width: 100%;

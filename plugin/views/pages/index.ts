@@ -56,12 +56,12 @@ export class IndexPageView extends PageView {
 			cls: "full-height full-width flex-center-column"
 		});
 
-		const quizSettingsHeader = mainContainer.createDiv( {
-			cls: "full-width flex-center",
+		const grid = mainContainer.createDiv({
+			cls: "grid-3-col full-width"
 		});
 
-		const selectedStatus = quizSettingsHeader.createSpan({
-			cls: "flex-center-column"
+		const selectedStatus = grid.createSpan({
+			cls: "flex-center-column justify-self-center"
 		});
 		const failedCardsCount = selectedStatus.createEl("p", {
 			cls: "error-text disable-spacing",
@@ -76,12 +76,18 @@ export class IndexPageView extends PageView {
 			text: "0"
 		});
 
-		setIcon(quizSettingsHeader.createSpan({
-			cls: "medium-icon transparent-icon margin-right-medium margin-left-medium",
+		setIcon(grid.createSpan({
+			cls: "medium-icon transparent-icon justify-self-center",
 		}), "ellipsis-vertical");
 
-		const flashcardsCountContainer = quizSettingsHeader.createDiv({
-			cls: "flex-center margin-right-medium"
+		let startIcon = grid.createSpan({
+			cls: "large-icon green-icon cursor-pointer justify-self-center"
+		});
+		setIcon(startIcon, "play");
+
+
+		const flashcardsCountContainer = grid.createDiv({
+			cls: "flex-center justify-self-center"
 		});
 
 		const clearIcon = flashcardsCountContainer.createSpan({
@@ -94,12 +100,12 @@ export class IndexPageView extends PageView {
 			text: this.flashcardsManager.getSelectedCount().toString()
 		});
 
-		setIcon(quizSettingsHeader.createSpan({
-			cls: "medium-icon transparent-icon margin-right-medium margin-left-medium",
+		setIcon(grid.createSpan({
+			cls: "medium-icon transparent-icon justify-self-center",
 		}), "ellipsis-vertical");
 
-		const questionsCountContainer = quizSettingsHeader.createDiv({
-			cls: "margin-left-medium"
+		const questionsCountContainer = grid.createDiv({
+			cls: "justify-self-center"
 		});
 
 		const cardsCountView = new CardsCountView(questionsCountContainer);
@@ -107,14 +113,6 @@ export class IndexPageView extends PageView {
 			this.count = count;
 		}).render();
 
-		setIcon(quizSettingsHeader.createSpan({
-			cls: "medium-icon transparent-icon margin-right-medium margin-left-medium",
-		}), "ellipsis-vertical");
-
-		let startIcon = quizSettingsHeader.createSpan({
-			cls: "large-icon green-icon cursor-pointer margin-left-medium"
-		});
-		setIcon(startIcon, "play");
 
 		const buttonsContainer = mainContainer.createDiv({
 			cls: "full-width flex-center margin-top-medium",
