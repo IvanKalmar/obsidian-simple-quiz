@@ -112,7 +112,7 @@ If saving results is enabled, the cards will be sorted by success, otherwise the
 
 ## More
 [Markdown blocks description](documentation/MarkdownBlocks.md) <br/>
-[Markdown blocks description](documentation/MarkdownBlocks.md) <br/>
+[Groups description](documentation/Groups.md) <br/>
 [Examples of usage](documentation/examples/Example.md)
 
 
