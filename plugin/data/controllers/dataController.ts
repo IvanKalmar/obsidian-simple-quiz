@@ -1,6 +1,7 @@
 import {App, normalizePath, TFile, TFolder, Vault} from "obsidian";
 import {ParserResult} from "../../parser";
 import {Controller} from "./controller";
+import {Obj} from "tern";
 
 function getFilesFromPaths(vault: Vault, paths: string[]): TFile[] {
 	let files: TFile[] = [];
@@ -24,6 +25,7 @@ export class DataController extends Controller {
 	app: App;
 
 	pluginFolder: string;
+	groupsFile: string;
 	resultsFile: string;
 
 	async load(): Promise<void> {
@@ -31,6 +33,7 @@ export class DataController extends Controller {
 
 		this.pluginFolder = normalizePath(this.app.vault.configDir + "/plugins/simple-quiz");
 
+		this.groupsFile = normalizePath(this.pluginFolder + "/groups.json");
 		this.resultsFile = normalizePath(this.pluginFolder + "/results.json");
 	}
 
@@ -60,6 +63,14 @@ export class DataController extends Controller {
 		}
 
 		return parseResult;
+	}
+
+	async loadGroups(): Promise<object> {
+		return await this.loadFile(this.groupsFile)
+	}
+
+	async saveGroups(obj: object): Promise<void> {
+		await this.saveFile(this.groupsFile, obj);
 	}
 
 	async loadResultsObject(): Promise<object> {

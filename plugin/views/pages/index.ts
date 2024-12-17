@@ -1,7 +1,7 @@
 import {PageView} from "./page";
 import {Notice, setIcon} from "obsidian";
 import {CardsCountView} from "../cardsCount";
-import {SelectListItems, SelectListView} from "../selectList";
+import {SelectListAction, SelectListItems, SelectListView} from "../lists/select";
 import {FlashcardsManager} from "../../data/flashcardsManager";
 import {QuizArguments} from "../../data/quiz";
 import {GroupsController} from "../../data/controllers/groupsController";
@@ -13,7 +13,11 @@ export class IndexPageView extends PageView {
 
 	flashcardsManager: FlashcardsManager;
 	count: number = 5;
-	onQuizStart: (quizArguments: QuizArguments) => void
+	onQuizStart: (quizArguments: QuizArguments) => void;
+
+	jsEnabled: boolean = false;
+
+	onGroupSettingsIconClick: () => void;
 
 	setGroupsController(groupsController: GroupsController) {
 		this.groupsController = groupsController;
@@ -35,8 +39,18 @@ export class IndexPageView extends PageView {
 		return this;
 	}
 
+	setOnGroupSettingsIconClick(onGroupSettingsIconClick: () => void) {
+		this.onGroupSettingsIconClick = onGroupSettingsIconClick;
+		return this;
+	}
+
 	setQuestionsCount(questionsCount: number): this {
 		this.count = questionsCount;
+		return this;
+	}
+
+	setJsEnabled(jsEnabled: boolean) {
+		this.jsEnabled = jsEnabled;
 		return this;
 	}
 
@@ -50,7 +64,11 @@ export class IndexPageView extends PageView {
 	}
 
 	render() {
-		this.flashcardsManager.setGroups(this.groupsController.getGroups());
+		this.flashcardsManager.setGroups(
+			this.groupsController.getGroups(
+				this.flashcardsManager.getFlashcards()
+			)
+		);
 
 		const mainContainer = this.container.createDiv({
 			cls: "full-height full-width flex-center-column"
@@ -59,32 +77,6 @@ export class IndexPageView extends PageView {
 		const grid = mainContainer.createDiv({
 			cls: "grid-3-col full-width"
 		});
-
-		const selectedStatus = grid.createSpan({
-			cls: "flex-center-column justify-self-center"
-		});
-		const failedCardsCount = selectedStatus.createEl("p", {
-			cls: "error-text disable-spacing",
-			text: "0"
-		});
-		const mediumCardsCount = selectedStatus.createEl("p", {
-			cls: "warning-text disable-spacing",
-			text: "0"
-		});
-		const successCardsCount = selectedStatus.createEl("p", {
-			cls: "success-text disable-spacing",
-			text: "0"
-		});
-
-		setIcon(grid.createSpan({
-			cls: "medium-icon transparent-icon justify-self-center",
-		}), "ellipsis-vertical");
-
-		let startIcon = grid.createSpan({
-			cls: "large-icon green-icon cursor-pointer justify-self-center"
-		});
-		setIcon(startIcon, "play");
-
 
 		const flashcardsCountContainer = grid.createDiv({
 			cls: "flex-center justify-self-center"
@@ -104,6 +96,36 @@ export class IndexPageView extends PageView {
 			cls: "medium-icon transparent-icon justify-self-center",
 		}), "ellipsis-vertical");
 
+		const selectedStatus = grid.createSpan({
+			cls: "flex-center justify-self-center"
+		});
+		const emptyCardsCount = selectedStatus.createEl("h4", {
+			cls: "medium-text secondary-text disable-spacing",
+			text: "0"
+		});
+		setIcon(selectedStatus.createEl("span", {
+			cls: "small-icon transparent-icon"
+		}), "dot");
+		const failedCardsCount = selectedStatus.createEl("h4", {
+			cls: "medium-text error-text disable-spacing",
+			text: "0"
+		});
+		setIcon(selectedStatus.createEl("span", {
+			cls: "small-icon transparent-icon"
+		}), "dot");
+		const middleCardsCount = selectedStatus.createEl("h4", {
+			cls: "medium-text warning-text disable-spacing",
+			text: "0"
+		});
+		setIcon(selectedStatus.createEl("span", {
+			cls: "small-icon transparent-icon"
+		}), "dot");
+		const successCardsCount = selectedStatus.createEl("h4", {
+			cls: "medium-text success-text disable-spacing",
+			text: "0"
+		});
+
+
 		const questionsCountContainer = grid.createDiv({
 			cls: "justify-self-center"
 		});
@@ -112,6 +134,15 @@ export class IndexPageView extends PageView {
 		cardsCountView.setOnCountUpdate((count) => {
 			this.count = count;
 		}).render();
+
+		setIcon(grid.createSpan({
+			cls: "medium-icon transparent-icon justify-self-center",
+		}), "ellipsis-vertical");
+
+		let startIcon = grid.createSpan({
+			cls: "large-icon green-icon cursor-pointer justify-self-center"
+		});
+		setIcon(startIcon, "play");
 
 
 		const buttonsContainer = mainContainer.createDiv({
@@ -123,22 +154,27 @@ export class IndexPageView extends PageView {
 		})
 		const selectListView = new SelectListView(selectListViewContainer);
 
-		const addButton = (title: string, marginLeft: boolean, marginRight: boolean,
+
+		const addButton = (title: string, actions: SelectListAction[],
+						   marginLeft: boolean, marginRight: boolean,
 						   items: SelectListItems[], selectedItems: Set<string>,
 						   onSelectedItemsChanged: (selectedItems: Set<string>) => void) => {
 			const button = buttonsContainer.createEl("button", {
 				cls: `flex-fill cursor-pointer ${marginLeft ? "margin-left-medium" : ""} ${marginRight ? "margin-right-medium" : ""}`,
 				text: title
 			});
+
 			button.on("click", "button", () => {
 				selectListView.empty();
 				selectListView
 					.setSearchPlaceholder(title)
+					.setActions(actions)
 					.setItems(items)
 					.setSelectedItems(selectedItems)
 					.setOnSelectedItemsChanged(onSelectedItemsChanged)
 					.render()
 			});
+
 			return button;
 		}
 
@@ -155,6 +191,7 @@ export class IndexPageView extends PageView {
 			const flashcards = this.flashcardsManager.getQuizFlashcards();
 			selectedCount.setText(flashcards.length.toString());
 
+			let empty = 0;
 			let failed = 0;
 			let middle = 0;
 			let success = 0;
@@ -173,52 +210,80 @@ export class IndexPageView extends PageView {
 						failed++;
 						break;
 					}
+					case FlashcardStatus.EMPTY: {
+						empty++;
+						break;
+					}
 				}
 			});
 
+			emptyCardsCount.setText(empty.toString());
 			failedCardsCount.setText(failed.toString());
-			mediumCardsCount.setText(middle.toString());
+			middleCardsCount.setText(middle.toString());
 			successCardsCount.setText(success.toString());
 		}
 
-		const groupsButton = addButton("Groups", false, true, groups,
+		const clear = () => {
+			emptyCardsCount.setText("0");
+			failedCardsCount.setText("0");
+			middleCardsCount.setText("0");
+			successCardsCount.setText("0");
+
+			selectedCount.setText("0");
+
+			this.flashcardsManager.reset();
+
+			selectListView.empty();
+			selectListView.render();
+		}
+
+		const groupsActions: SelectListAction[] = [];
+		if(this.jsEnabled) {
+			groupsActions.push({
+				icon: "settings-2",
+				onClick: () => this.onGroupSettingsIconClick()
+			})
+		}
+
+		const groupsButton = addButton("Groups", groupsActions, false, true, groups,
 			this.flashcardsManager.selectedGroups, (selectedGroups) => {
 				this.flashcardsManager.updateSelectedGroups(selectedGroups);
 				updateSelected();
 		});
-		groupsButton.dispatchEvent(new Event("click"));
 
-		addButton("Flashcards", false, true, flashcards,
+		addButton("Flashcards", [], false, true, flashcards,
 			this.flashcardsManager.selectedFlashcards, (selectedFlashcards) => {
 				this.flashcardsManager.updateSelectedFlashcardsIDs(selectedFlashcards);
 				updateSelected();
 		});
 
-		addButton("Pools", false, true, pools,
+		addButton("Pools",  [],false, true, pools,
 			this.flashcardsManager.selectedPools, (selectedPools) => {
 				this.flashcardsManager.updateSelectedPools(selectedPools);
 				updateSelected();
 		});
 
-		addButton("Tags", false, false, tags,
+		addButton("Tags", [], false, false, tags,
 			this.flashcardsManager.selectedTags, (selectedTags) => {
 				this.flashcardsManager.updateSelectedTags(selectedTags);
 				updateSelected();
 		});
 
 		clearIcon.on("click", "span", () => {
-			failedCardsCount.setText("0");
-			mediumCardsCount.setText("0");
-			successCardsCount.setText("0");
-
-			selectedCount.setText("0");
-			this.flashcardsManager.reset();
-			selectListView.empty();
-			selectListView.render();
+			clear();
 		})
 
 		startIcon.on("click", "span", () => {
 			this._start();
 		});
+
+
+		if(groups.length > 0) {
+			this.flashcardsManager.reset();
+			this.flashcardsManager.updateSelectedGroups(new Set([groups[0].value]));
+		}
+		updateSelected();
+
+		groupsButton.click();
 	}
 }

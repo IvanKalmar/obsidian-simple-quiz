@@ -57,3 +57,7 @@ export function addAlphaToHex(color: string, opacity: number) {
 	let _opacity = Math.round(Math.min(Math.max(opacity ?? 1, 0), 1) * 255);
 	return color + _opacity.toString(16).toUpperCase();
 }
+
+
+// https://coreui.io/blog/how-to-check-if-string-is-number-in-javascript/
+export const isNumeric = (string_: string) => /^[+-]?\d+(\.\d+)?$/.test(string_)

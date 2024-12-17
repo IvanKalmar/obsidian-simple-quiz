@@ -6,13 +6,18 @@ import {ResultsPageView} from "./pages/results";
 import {ResultsController} from "../data/controllers/resultsController";
 import {DataController} from "../data/controllers/dataController";
 import {GroupsController} from "../data/controllers/groupsController";
+import {GroupsListPageView} from "./pages/groups/list";
+import {GroupsUpdatePageView} from "./pages/groups/update";
 
 export class QuizViewSettings {
+	jsEnabled: boolean
 	allowFullscreen: boolean;
 	soundFeedback: boolean;
 	vibrateFeedback: boolean;
 
-	constructor(allowFullscreen: boolean, soundFeedback: boolean, vibrateFeedback: boolean) {
+	constructor(jsEnabled: boolean, allowFullscreen: boolean,
+				soundFeedback: boolean, vibrateFeedback: boolean) {
+		this.jsEnabled = jsEnabled;
 		this.allowFullscreen = allowFullscreen;
 		this.soundFeedback = soundFeedback;
 		this.vibrateFeedback = vibrateFeedback;
@@ -27,6 +32,8 @@ export class QuizView extends View {
 	flashcardsManager: FlashcardsManager;
 
 	quizViewSettings: QuizViewSettings;
+
+	updateTitle: (title: string) => void = () => {};
 
 	setDataController(dataController: DataController): this {
 		this.dataController = dataController;
@@ -53,12 +60,18 @@ export class QuizView extends View {
 		return this;
 	}
 
+	setUpdateTitle(updateTitle: (title: string) => void) {
+		this.updateTitle = updateTitle;
+		return this;
+	}
+
 	render() {
 		const container = this.container.createDiv({
 			cls: "full-width full-height"
 		})
 
 		const indexPage = new IndexPageView(container)
+			.setJsEnabled(this.quizViewSettings.jsEnabled)
 			.setResultsController(this.resultsController)
 			.setGroupsController(this.groupsController)
 			.setFlashcardsManager(this.flashcardsManager);
@@ -98,6 +111,66 @@ export class QuizView extends View {
 
 			indexPage.render();
 		})
+
+
+		const groupsListPage = new GroupsListPageView(container);
+		const groupsUpdatePage = new GroupsUpdatePageView(container)
+			.setGroupsController(this.groupsController);
+
+		const openGroupsList = () => {
+			container.empty();
+
+			groupsListPage
+				.setGroups(this.groupsController.getUserGroups())
+				.render();
+		}
+
+
+		if(this.quizViewSettings.jsEnabled) {
+			indexPage.setOnGroupSettingsIconClick(openGroupsList);
+
+			groupsUpdatePage.setOnBack(openGroupsList)
+
+			groupsListPage
+				.setOnBack(() => {
+					container.empty();
+
+					indexPage.render();
+				})
+				.setOnCreate(() => {
+					container.empty();
+
+					groupsUpdatePage
+						.setTitle("")
+						.setCondition("")
+						.setOnCreate(async (title, condition) => {
+							await this.groupsController.addGroup(title, condition);
+							openGroupsList();
+						})
+						.render();
+				}).setOnUpdate((groupID) => {
+				const group = this.groupsController.getGroup(groupID);
+
+				if(group) {
+					container.empty();
+
+					groupsUpdatePage
+						.setTitle(group.title)
+						.setCondition(group.condition)
+						.setOnCreate(async (title, condition) => {
+							await this.groupsController.updateGroup(group.id, title, condition);
+							openGroupsList();
+						})
+						.render();
+				}
+			}).setOnDelete(async (groupID: string) => {
+				await this.groupsController.removeGroup(groupID);
+				openGroupsList();
+			});
+		}
+
+
+		this.updateTitle("Quiz")
 
 		indexPage.render();
 	}

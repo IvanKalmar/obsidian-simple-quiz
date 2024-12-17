@@ -112,6 +112,9 @@
 	opacity: 0.1;
 }
 
+.icon-button:hover {
+	transform: scale(1.1);
+}
 
 /* Spacing */
 
@@ -602,11 +605,12 @@
 
 .search-list-item {
 	display: flex;
-	flex-direction: column;
-	justify-content: flex-start;
-	align-items: flex-start;
-	cursor: pointer;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
 	align-content: flex-start;
+
+	cursor: pointer;
 }
 
 .search-list-item:hover {

@@ -6,7 +6,7 @@
 <img src="https://img.shields.io/badge/Obsidian-%23483699.svg?style=for-the-badge&logo=obsidian&logoColor=white" />
 <img src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white" /> 
 <img src="https://img.shields.io/static/v1?label=License&message=MIT&color=3DDC84&style=for-the-badge" /> 
-<img src="https://img.shields.io/static/v1?label=Version&message=0.2.8&color=3DDC84&style=for-the-badge" />
+<img src="https://img.shields.io/static/v1?label=Version&message=0.2.9&color=3DDC84&style=for-the-badge" />
 <img src="https://img.shields.io/static/v1?label=Status&message=Unstable&color=yellow&style=for-the-badge" />
 </p>
 
@@ -19,6 +19,7 @@
 - Can run the quiz directly in the note by using `quiz` markdown block.
 - Shows the current steak, the number of repeated cards and the number of quizzes for the day;
 - Shows charts with month, year, and cards progression;
+- Enabling grouping by conditions;
 
 
 ## Demo
@@ -110,6 +111,7 @@ If saving results is enabled, the cards will be sorted by success, otherwise the
 
 
 ## More
+[Markdown blocks description](documentation/MarkdownBlocks.md) <br/>
 [Markdown blocks description](documentation/MarkdownBlocks.md) <br/>
 [Examples of usage](documentation/examples/Example.md)
 

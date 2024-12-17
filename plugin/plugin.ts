@@ -1,10 +1,10 @@
 import {MarkdownPostProcessorContext, Plugin} from 'obsidian';
 import {DEFAULT_SETTINGS, SimpleQuizPluginSettings, SimpleQuizSettingTab} from "./settings";
 import {Parser, ParserResult} from "./parser";
-import {SimpleQuizModal} from "./modal";
+import {QuizModal} from "./views/modals/quiz";
 import {DataController} from "./data/controllers/dataController";
 import {ResultsController} from "./data/controllers/resultsController";
-import {MarkdownCardsPlaceholderView} from "./views/markdown/cardsPlaceholder";
+import {MarkdownCardsPlaceholderView} from "./views/markdown/cards";
 import {MarkdownTodayView, MarkdownTodayViewSettings} from "./views/markdown/today";
 import {MarkdownQuizView, MarkdownQuizViewSettings} from "./views/markdown/quiz";
 import {Flashcard} from "./data/flashcard";
@@ -86,7 +86,7 @@ export default class SimpleQuizPlugin extends Plugin {
 					.setSettings(Object.assign(new MarkdownTodayViewSettings(), settings))
 					.setDataController(this.dataController)
 					.setResultsController(this.resultsController)
-					.setOnOpen(() => { this.quizWithAllCards(); });
+					.setOnOpen(() => { this.openQuizModalWithAllCards(); });
 
 				results.render();
 			});
@@ -132,6 +132,7 @@ export default class SimpleQuizPlugin extends Plugin {
 				const markdownQuizViewSettings = Object.assign(new MarkdownQuizViewSettings(), settings);
 
 				const quizViewSettings = new QuizViewSettings(
+					this.settings.enableJS,
 					this.settings.allowFullscreen,
 					this.settings.soundFeedback,
 					this.settings.vibrateFeedback
@@ -161,14 +162,14 @@ export default class SimpleQuizPlugin extends Plugin {
 
 		this.addRibbonIcon(
 			'play',
-			'Run quiz!',
-			() => { this.quizWithAllCards(); }
+			'Run quiz',
+			() => { this.openQuizModalWithAllCards(); }
 		);
 
 		this.addCommand({
 			id: 'run-quiz',
-			name: 'Run quiz!',
-			callback: () => { this.quizWithAllCards(); }
+			name: 'Run quiz',
+			callback: () => { this.openQuizModalWithAllCards(); }
 		});
 	}
 
@@ -198,13 +199,13 @@ export default class SimpleQuizPlugin extends Plugin {
 		}
 	}
 
-	async quizWithAllCards() {
+	async openQuizModalWithAllCards() {
 		const flashcards  = (await this.dataController.getAllData()).flashcards;
 		this.openQuizModal(flashcards);
 	}
 
 	openQuizModal(flashcards: Flashcard[]) {
-		new SimpleQuizModal(this.app, this, flashcards).open();
+		new QuizModal(this.app, this, flashcards).open();
 	}
 
 	async loadSettings() {

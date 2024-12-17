@@ -7,6 +7,7 @@ export interface SimpleQuizPluginSettings {
 	dataJSTag: string;
 	todayTag: string;
 	chartsTag: string;
+	groupsTag: string;
 
 	indexing: boolean;
 	saveResults: boolean;
@@ -33,6 +34,7 @@ export const DEFAULT_SETTINGS: SimpleQuizPluginSettings = {
 	dataJSTag: "quizjs",
 	todayTag: "quiztoday",
 	chartsTag: "quizcharts",
+	groupsTag: "quizgroups",
 
 	indexing: true,
 	saveResults: true,
@@ -247,6 +249,15 @@ export class SimpleQuizSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}));
 		}
+
+		new Setting(containerEl)
+			.setName('Groups tag')
+			.addText(text => text
+				.setValue(this.plugin.settings.groupsTag)
+				.onChange(async (value) => {
+					this.plugin.settings.groupsTag = value;
+					await this.plugin.saveSettings();
+				}));
 
 	}
 }

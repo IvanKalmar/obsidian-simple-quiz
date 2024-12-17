@@ -1,11 +1,11 @@
 import {App, Modal} from "obsidian";
-import {FlashcardsManager} from "./data/flashcardsManager";
-import SimpleQuizPlugin from "./plugin";
-import {Flashcard} from "./data/flashcard";
-import {QuizView, QuizViewSettings} from "./views/quiz";
+import {FlashcardsManager} from "../../data/flashcardsManager";
+import SimpleQuizPlugin from "../../plugin";
+import {Flashcard} from "../../data/flashcard";
+import {QuizView, QuizViewSettings} from "../quiz";
 
 
-export class SimpleQuizModal extends Modal {
+export class QuizModal extends Modal {
 	baseTitle: string
 	plugin: SimpleQuizPlugin
 	flashcardsManager: FlashcardsManager
@@ -35,6 +35,7 @@ export class SimpleQuizModal extends Modal {
 		this.setTitle(this.baseTitle);
 
 		const quizViewSettings = new QuizViewSettings(
+			this.plugin.settings.enableJS,
 			false,
 			this.plugin.settings.soundFeedback,
 			this.plugin.settings.vibrateFeedback

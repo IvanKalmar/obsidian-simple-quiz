@@ -1,35 +1,42 @@
-import {View} from "./view";
+import {View} from "../view";
 import {setIcon} from "obsidian";
 
-export interface SelectListItems {
-	text: string
-	value: string
+export enum ListActionSide {
+	LEFT, RIGHT
 }
 
-export class SelectListView extends View {
+export interface ListAction {
+	side?: ListActionSide,
+	icon: string,
+	classes: string[],
+	onClick: (event: MouseEvent) => void
+}
+
+
+export interface ListItems {
+	text: string
+	actions: ListAction[]
+}
+
+
+export class ListView extends View {
 	selectListContainer: HTMLDivElement;
 	searchPlaceholder: string = ""
-	items: SelectListItems[];
-	selectedItems: Set<string>;
-	onSelectedItemsChanged: (selectedItems: Set<string>) => void;
+	items: ListItems[];
+	actions: ListAction[];
 
 	setSearchPlaceholder(searchPlaceholder: string): this {
 		this.searchPlaceholder = searchPlaceholder;
 		return this;
 	}
 
-	setItems(items: SelectListItems[]): this {
+	setItems(items: ListItems[]): this {
 		this.items = items;
 		return this;
 	}
 
-	setSelectedItems(selectedItems: Set<string>): this {
-		this.selectedItems = selectedItems;
-		return this;
-	}
-
-	setOnSelectedItemsChanged(onSelectedItemsChanged: (selectedItems: Set<string>) => void): this {
-		this.onSelectedItemsChanged = onSelectedItemsChanged;
+	setActions(actions: ListAction[]): this {
+		this.actions = actions;
 		return this;
 	}
 
@@ -48,25 +55,43 @@ export class SelectListView extends View {
 
 		const inputContainer = this.selectListContainer.createDiv({
 			cls: "select-list-input-container margin-bottom-medium"
+		});
+
+		const actionsLeft = inputContainer.createDiv({
+			cls: "flex-center"
 		})
+		for(const action of this.actions) {
+			if(action.side != ListActionSide.LEFT) {
+				continue;
+			}
+
+			const icon = actionsLeft.createSpan({
+				cls: "margin-right-medium flex-center small-icon cursor-pointer",
+			});
+			setIcon(icon, action.icon);
+			icon.on("click", "span", action.onClick);
+		}
+
 		const searchField = inputContainer.createEl("input", {
 			cls: "flex-fill",
 			type: "text",
 			placeholder: this.searchPlaceholder
-		})
-		const selectedCountElement = inputContainer.createSpan({
-			cls: "margin-left-medium secondary-text medium-text",
-			text: "0"
 		});
-		const clearIcon = inputContainer.createSpan({
-			cls: "margin-left-small small-icon flex-center cursor-pointer red-icon"
-		});
-		setIcon(clearIcon, "circle-x")
 
-		const updateSelectedItems = () => {
-			selectedCountElement.setText(this.selectedItems.size.toString());
+		const actionsRight = inputContainer.createDiv({
+			cls: "flex-center"
+		})
+		for(const action of this.actions) {
+			if(action.side != ListActionSide.RIGHT) {
+				continue;
+			}
+
+			const icon = actionsRight.createSpan({
+				cls: "margin-left-medium flex-center small-icon cursor-pointer",
+			});
+			setIcon(icon, action.icon);
+			icon.on("click", "span", action.onClick);
 		}
-		updateSelectedItems();
 
 		let itemsContainer = this.selectListContainer.createDiv({
 			cls: "flex-fill static-height",
@@ -81,22 +106,21 @@ export class SelectListView extends View {
 
 		const addItems = () => {
 			for(const item of currentItems.slice(offset, offset + limit)) {
-				const selected: string = this.selectedItems.has(item.value) ? "search-list-item-selected" : "";
 				const itemElement = itemsContainer.createDiv({
-					cls: `search-list-item cursor-pointer padding-medium ${selected}`,
+					cls: `search-list-item cursor-pointer padding-medium`,
 					text: item.text
 				});
-				itemElement.on("click", "div", () => {
-					if(!this.selectedItems.has(item.value)) {
-						this.selectedItems.add(item.value);
-						itemElement.classList.add("search-list-item-selected");
-					} else {
-						this.selectedItems.delete(item.value);
-						itemElement.classList.remove("search-list-item-selected");
-					}
-					updateSelectedItems();
-					this.onSelectedItemsChanged(this.selectedItems);
-				});
+
+				const actions = itemElement.createDiv({
+					cls: "flex-center"
+				})
+				for(const action of item.actions) {
+					const icon = actions.createSpan({
+						cls: "margin-left-medium icon-button " + action.classes.join(" "),
+					});
+					setIcon(icon, action.icon);
+					icon.on("click", "span", action.onClick);
+				}
 			}
 			offset += limit;
 		}
@@ -131,14 +155,6 @@ export class SelectListView extends View {
 				timer = null;
 			}, 500);
 		});
-
-		clearIcon.on("click",  "span", () => {
-			currentItems = this.items;
-			this.selectedItems.clear();
-			clearContainer();
-			updateSelectedItems();
-			this.onSelectedItemsChanged(this.selectedItems);
-		})
 
 		addItems();
 	}

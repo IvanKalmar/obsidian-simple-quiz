@@ -4,7 +4,6 @@ import {QuizResult} from "../quiz";
 import {getDateStartTimestamp, round} from "../../utils";
 import {Controller} from "./controller";
 import {Notice} from "obsidian";
-import {Flashcard} from "../flashcard";
 
 
 export enum FlashcardStatus {
