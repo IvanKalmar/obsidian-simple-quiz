@@ -85,25 +85,30 @@ export class QuizView extends View {
 		const resultsPage = new ResultsPageView(container)
 			.setResultsController(this.resultsController);
 
-		indexPage.setOnQuizStart((quizArguments) => {
+		indexPage.setOnQuizStart((previewMode, quizArguments) => {
 			container.empty();
 
 			indexPage
 				.setQuestionsCount(quizArguments.questionsCount);
 
 			quizPage
+				.setPreviewMode(previewMode)
 				.setQuizArguments(quizArguments)
 				.render();
 		});
 
-		quizPage.setOnResult(async (quizResult) => {
+		quizPage.setOnResult(async (previewMode, quizResult) => {
 			container.empty();
 
-			await this.resultsController.appendQuizResult(quizResult);
+			if(previewMode) {
+				indexPage.render();
+			} else {
+				await this.resultsController.appendQuizResult(quizResult);
 
-			resultsPage
-				.setQuizResults(quizResult)
-				.render();
+				resultsPage
+					.setQuizResults(quizResult)
+					.render();
+			}
 		});
 
 		resultsPage.setOnContinue(() => {
@@ -118,6 +123,8 @@ export class QuizView extends View {
 			.setGroupsController(this.groupsController);
 
 		const openGroupsList = () => {
+			this.updateTitle("Groups settings")
+
 			container.empty();
 
 			groupsListPage
@@ -133,6 +140,8 @@ export class QuizView extends View {
 
 			groupsListPage
 				.setOnBack(() => {
+					this.updateTitle("Quiz")
+
 					container.empty();
 
 					indexPage.render();

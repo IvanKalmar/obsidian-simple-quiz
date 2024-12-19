@@ -1,17 +1,21 @@
 import {Quiz, QuizArguments, QuizQuestion, QuizResult} from "../../data/quiz";
-import {FlashcardSide} from "../../data/flashcard";
+import {FlashcardSide, FlashcardType} from "../../data/flashcard";
 import {PageView} from "./page";
 import {ResultsController} from "../../data/controllers/resultsController";
 import {getAudioBuffer} from "../../beep";
 import {Platform, setIcon} from "obsidian";
+import {Question} from "./questions/question";
+import {InputQuestion} from "./questions/input";
+import {ManualQuestion} from "./questions/manual";
 
 export class QuizPageView extends PageView {
 	resultsController: ResultsController;
 
 	quizArguments: QuizArguments;
 
-	onResult: (quizResult: QuizResult) => void;
+	onResult: (previewMode: boolean, quizResult: QuizResult) => void;
 
+	previewMode: boolean = false;
 	allowFullscreen: boolean = false;
 	soundFeedback: boolean = false;
 	vibrateFeedback: boolean = false;
@@ -26,8 +30,13 @@ export class QuizPageView extends PageView {
 		return this;
 	}
 
-	setOnResult(onResult: (quizResult: QuizResult) => void) {
+	setOnResult(onResult: (previewMode: boolean, quizResult: QuizResult) => void) {
 		this.onResult = onResult;
+		return this;
+	}
+
+	setPreviewMode(previewMode: boolean) {
+		this.previewMode = previewMode;
 		return this;
 	}
 
@@ -83,7 +92,7 @@ export class QuizPageView extends PageView {
 				.then(() => {})
 				.catch(() => {})
 				.finally(() => {
-					this.onResult(result);
+					this.onResult(this.previewMode, result);
 				});
 		}).catch(() => {});
 	}
@@ -118,100 +127,75 @@ export class QuizPageView extends PageView {
 		});
 
 		for (let i = 0; i < questions.length; i++){
-			const question = questions[i];
-			let answer = await this.renderQuestion(questionsContainer, question, questions.length, i + 1);
-			question.setAnswer(answer);
+			let question = this.renderQuestion(
+				questionsContainer, questions[i],
+				questions.length, i + 1
+			);
+
+			if(this.previewMode) {
+				if(i == 0) {
+					question.previousButton.hide();
+				} else {
+					question.previousButton.show();
+				}
+
+				if(i == questions.length - 1){
+					question.nextButton.setText("Finish")
+				} else {
+					question.nextButton.setText("Next");
+				}
+
+				const next = await question.getPreview();
+
+				if(!next) {
+					if(i > 0) {
+						i -= 2;
+					} else {
+						i = -1;
+					}
+				}
+			} else {
+				questions[i].setAnswer(await question.getAnswer());
+
+				if(this.soundFeedback) {
+					soundFeedback();
+				}
+
+				if(this.vibrateFeedback) {
+					vibrateFeedback();
+				}
+			}
+
 			questionsContainer.empty();
-
-			if(this.soundFeedback) {
-				soundFeedback();
-			}
-
-			if(this.vibrateFeedback) {
-				vibrateFeedback();
-			}
 		}
 	}
 
-	async renderQuestion(container: HTMLElement, question: QuizQuestion, questionsCount: number, currentQuestion: number) {
-		container.createEl("h5", {
-			cls: "secondary-text disable-spacing",
-			text: `${currentQuestion} / ${questionsCount}`
-		})
-		let questionList = question.side === FlashcardSide.LEFT
-			? question.flashcard.question.left : question.flashcard.question.right;
-
-		const questionContainer = container.createDiv({
-			cls: "flex-center-column flex-fill"
-		});
-
-		questionContainer.createEl("h2", {
-			cls: "only-top-margin",
-			text: questionList[0]
-		})
-
-		const additionalQuestions = questionContainer.createEl("h4", {
-			cls: "only-top-margin normal-text flex-center flex-wrap"
-		});
-
-		for (let i = 1; i < questionList.length; i++){
-			additionalQuestions.createEl("span", {
-				text: questionList[i]
-			});
-
-			if(i < questionList.length - 1){
-				const divider = additionalQuestions.createEl("span", {
-					cls: "small-icon gray-icon"
-				});
-				setIcon(divider, "dot")
+	renderQuestion(container: HTMLElement, question: QuizQuestion,
+						 questionsCount: number, currentQuestion: number): Question {
+		let questionView: Question;
+		switch (question.flashcard.type) {
+			case FlashcardType.INPUT: {
+				questionView = new InputQuestion(container);
+				break;
+			}
+			case FlashcardType.MANUAL: {
+				questionView = new ManualQuestion(container);
+				break;
+			}
+			default: {
+				questionView = new InputQuestion(container);
+				break;
 			}
 		}
 
-		const bottomContainer = container.createDiv({
-			cls: "full-width flex-space-between-column padding-bottom-large"
-		});
+		questionView
+			.setQuestion(question)
+			.setQuestionsCount(questionsCount)
+			.setCurrentQuestionIndex(currentQuestion)
+			.setPreviewMode(this.previewMode);
 
-		let textarea = bottomContainer.createEl("textarea", {
-			cls: "margin-medium padding-medium full-width medium-large-text container-style " +
-				"padding-top-small disable-outline always-primary-border static-height"
-		});
-		textarea.focus();
+		questionView.render();
 
-		let buttonContainer = bottomContainer.createDiv({
-			cls: "full-width flex-space-between",
-		});
-		let skipButton = buttonContainer.createEl("button", {
-			text: "Skip",
-			cls: "flex-fill margin-right-medium button red-border padding-medium"
-		});
-
-		let answerButton = buttonContainer.createEl("button", {
-			text: "Next",
-			cls: "flex-fill button primary-border padding-medium"
-		});
-
-		return new Promise((resolve, reject) => {
-			skipButton.on("click", "button", () => {
-				resolve(null);
-			});
-
-			answerButton.on("click", "button", () => {
-				resolve(textarea.value);
-			});
-
-			if(Platform.isMobile) {
-				bottomContainer.addClass("margin-bottom-large");
-			}
-
-			if(!Platform.isMobile) {
-				textarea.on("keydown", "textarea", (event) => {
-					if (event.key == "Enter" && event.shiftKey) {
-						event.preventDefault();
-						resolve(textarea.value);
-					}
-				});
-				textarea.setAttribute("placeholder", "Press Shift + Enter to submit answer");
-			}
-		})
+		return questionView;
 	}
 }

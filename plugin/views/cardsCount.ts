@@ -17,17 +17,17 @@ export class CardsCountView extends View {
 		})
 
 		let minusIcon = container.createSpan({
-			cls: "margin-right-medium cursor-pointer medium-icon"
+			cls: "margin-right-small cursor-pointer medium-icon"
 		});
 		setIcon(minusIcon, "minus");
 
-		let count = container.createSpan({
-			cls: "very-large-text disable-spacing",
+		let count = container.createEl("h1", {
+			cls: "normal-text-weight large-text disable-spacing",
 			text: this.count.toString()
 		});
 
 		let plusIcon = container.createSpan({
-			cls: "margin-left-medium cursor-pointer medium-icon"
+			cls: "margin-left-small cursor-pointer medium-icon"
 		});
 		setIcon(plusIcon, "plus");
 
@@ -40,7 +40,7 @@ export class CardsCountView extends View {
 
 		plusIcon.on("click", "span", () => {
 			let step = this.count < 5 ? 1 : 5;
-			this.count = (this.count + step) > 100 ? 100 : this.count + step;
+			this.count = (this.count + step) > 150 ? 150 : this.count + step;
 			count.setText(this.count.toString());
 			this.onCountUpdate(this.count);
 		});

@@ -1,9 +1,11 @@
 import {getStringHashCode} from "../utils";
+import {Facet} from "@codemirror/state";
 
 export class FlashcardException extends Error {}
 
 export class Flashcard {
 	id: string
+	type: FlashcardType = FlashcardType.INPUT;
 	question: FlashcardQuestion
 	pool: string = 'cards'
 	tags: string[] = []
@@ -21,13 +23,39 @@ export class Flashcard {
 	}
 
 	isValid() {
-		return !!this.question
+		if(!this.question) {
+			return false;
+		}
+
+		switch (this.type) {
+			case FlashcardType.INPUT:
+			case FlashcardType.MANUAL: {
+				if(!this.question.hasOwnProperty("left")) {
+					return false;
+				}
+
+				if(!this.question.hasOwnProperty("right")) {
+					return false;
+				}
+
+				if(this.question.left.length == 0 || this.question.right.length == 0){
+					return false;
+				}
+
+				return true;
+			}
+		}
 	}
 
 	getDefaultTitle(): string {
 		const title = this.question[this.defaultSide].first()
 		return title ? title : "";
 	}
+}
+
+export enum FlashcardType {
+	INPUT = "input",
+	MANUAL = "manual",
 }
 
 export enum FlashcardSide {

@@ -29,6 +29,7 @@ export class QuizModal extends Modal {
 	}
 
 	async start(contentEl: HTMLElement) {
+		this.modalEl.classList.add("simple-quiz");
 		this.modalEl.classList.add("quiz-modal-container");
 		contentEl.classList.add("full-width")
 

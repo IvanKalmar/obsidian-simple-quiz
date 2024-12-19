@@ -35,6 +35,8 @@ export abstract class MarkdownBase extends View {
 		hideActionsContainer: boolean = false,
 	): MarkdownBaseContainer {
 		let container = this.container.createDiv({
+			cls: "simple-quiz"
+		}).createDiv({
 			cls: simpleContainer ? "markdown-base-block-minify" : "markdown-base-block"
 		});
 

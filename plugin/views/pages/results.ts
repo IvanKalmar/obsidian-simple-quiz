@@ -3,7 +3,7 @@ import {ResultsController} from "../../data/controllers/resultsController";
 import {QuizResult} from "../../data/quiz";
 import {setIcon} from "obsidian";
 
-import {FlashcardSide} from "../../data/flashcard";
+import {FlashcardSide, FlashcardType} from "../../data/flashcard";
 import {PageView} from "./page";
 
 export class ResultsPageView extends PageView{
@@ -48,19 +48,31 @@ export class ResultsPageView extends PageView{
 				"static-height overflow-y container-style-border"
 		});
 
-		const questions = this.quizResults.questions.map(question => {
+		let questions = this.quizResults.questions.map(question => {
 			return {
 				question: question,
 				score: this.resultsController.getCardScore(question.flashcard.id)
 			}
-		}).sort((a, b) => {
+		})
+
+		const sort = (a: any, b: any) => {
 			if (a.score < b.score) {
 				return -1;
 			} else if (a.score > b.score) {
 				return 1;
 			}
 			return 0;
-		});
+		}
+
+		const successQuestions = questions
+			.filter(question => question.question.result)
+			.sort(sort);
+
+		const failedQuestions = questions
+			.filter(question => !question.question.result)
+			.sort(sort);
+
+		questions = failedQuestions.concat(successQuestions);
 
 		for (let i = 0; i < questions.length; i++){
 			const question = questions[i].question;
@@ -140,10 +152,12 @@ export class ResultsPageView extends PageView{
 				}
 			}
 
-			answersContainer.createEl("h5", {
-				cls: `disable-spacing ${question.answer ? "normal-text" : "warning-text"}`,
-				text: question.answer ? question.answer : "..."
-			})
+			if(question.flashcard.type == FlashcardType.INPUT) {
+				answersContainer.createEl("h5", {
+					cls: `disable-spacing ${question.answer ? "normal-text" : "warning-text"}`,
+					text: question.answer ? question.answer : "..."
+				});
+			}
 		}
 
 		let buttonContainer = container.createDiv({

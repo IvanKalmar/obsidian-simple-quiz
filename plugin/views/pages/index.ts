@@ -13,7 +13,7 @@ export class IndexPageView extends PageView {
 
 	flashcardsManager: FlashcardsManager;
 	count: number = 5;
-	onQuizStart: (quizArguments: QuizArguments) => void;
+	onQuizStart: (previewMode: boolean, quizArguments: QuizArguments) => void;
 
 	jsEnabled: boolean = false;
 
@@ -34,7 +34,7 @@ export class IndexPageView extends PageView {
 		return this;
 	}
 
-	setOnQuizStart(onQuizStart: (quizArguments: QuizArguments) => void): this {
+	setOnQuizStart(onQuizStart: (previewMode: boolean, quizArguments: QuizArguments) => void): this {
 		this.onQuizStart = onQuizStart;
 		return this;
 	}
@@ -54,13 +54,13 @@ export class IndexPageView extends PageView {
 		return this;
 	}
 
-	_start() {
+	_start(previewMode: boolean = false) {
 		if((this.count == 0) || (this.flashcardsManager.getSelectedCount() == 0)) {
 			new Notice("At least one flashcard must be selected");
 			return;
 		}
 
-		this.onQuizStart(new QuizArguments(this.flashcardsManager, this.count));
+		this.onQuizStart(previewMode, new QuizArguments(this.flashcardsManager, this.count));
 	}
 
 	render() {
@@ -74,72 +74,84 @@ export class IndexPageView extends PageView {
 			cls: "full-height full-width flex-center-column"
 		});
 
-		const grid = mainContainer.createDiv({
-			cls: "grid-3-col full-width"
+
+		const controls = mainContainer.createDiv({
+			cls: "flex-center flex-wrap justify-self-center margin-top-medium margin-bottom-medium"
 		});
 
-		const flashcardsCountContainer = grid.createDiv({
-			cls: "flex-center justify-self-center"
+		const allCount = controls.createDiv({
+			cls: "flex-center margin-top-small margin-bottom-small"
 		});
-
-		const clearIcon = flashcardsCountContainer.createSpan({
-			cls: "margin-right-medium medium-icon cursor-pointer red-icon"
+		const clearIcon = allCount.createSpan({
+			cls: "small-icon cursor-pointer red-icon justify-self-center margin-right-small"
 		});
-		setIcon(clearIcon, "trash-2");
-
-		const selectedCount = flashcardsCountContainer.createSpan({
-			cls: "very-large-text",
-			text: this.flashcardsManager.getSelectedCount().toString()
-		});
-
-		setIcon(grid.createSpan({
-			cls: "medium-icon transparent-icon justify-self-center",
-		}), "ellipsis-vertical");
-
-		const selectedStatus = grid.createSpan({
-			cls: "flex-center justify-self-center"
-		});
-		const emptyCardsCount = selectedStatus.createEl("h4", {
-			cls: "medium-text secondary-text disable-spacing",
+		setIcon(clearIcon, "x");
+		const allCardsCount = allCount.createEl("h1", {
+			cls: "normal-text-weight normal-text disable-spacing",
 			text: "0"
 		});
-		setIcon(selectedStatus.createEl("span", {
+		setIcon(allCount.createEl("span", {
+			cls: "small-icon transparent-icon margin-left-small margin-right-small"
+		}), "move-right");
+
+		const counts = controls.createDiv({
+			cls: "flex-center margin-top-small margin-bottom-small"
+		})
+		const emptyCardsCount = counts.createEl("h1", {
+			cls: "normal-text-weight secondary-text disable-spacing",
+			text: "0"
+		});
+		setIcon(counts.createEl("span", {
 			cls: "small-icon transparent-icon"
 		}), "dot");
-		const failedCardsCount = selectedStatus.createEl("h4", {
-			cls: "medium-text error-text disable-spacing",
+		const failedCardsCount = counts.createEl("h1", {
+			cls: "normal-text-weight error-text disable-spacing",
 			text: "0"
 		});
-		setIcon(selectedStatus.createEl("span", {
+		setIcon(counts.createEl("span", {
 			cls: "small-icon transparent-icon"
 		}), "dot");
-		const middleCardsCount = selectedStatus.createEl("h4", {
-			cls: "medium-text warning-text disable-spacing",
+		const middleCardsCount = counts.createEl("h1", {
+			cls: "normal-text-weight warning-text disable-spacing",
 			text: "0"
 		});
-		setIcon(selectedStatus.createEl("span", {
+		setIcon(counts.createEl("span", {
 			cls: "small-icon transparent-icon"
 		}), "dot");
-		const successCardsCount = selectedStatus.createEl("h4", {
-			cls: "medium-text success-text disable-spacing",
+		const successCardsCount = counts.createEl("h1", {
+			cls: "normal-text-weight success-text disable-spacing",
 			text: "0"
 		});
+		setIcon(counts.createEl("span", {
+			cls: "small-icon transparent-icon margin-left-small margin-right-small"
+		}), "move-right");
 
-
-		const questionsCountContainer = grid.createDiv({
-			cls: "justify-self-center"
+		const cardsCountContainer = controls.createDiv({
+			cls: "flex-center margin-top-small margin-bottom-small"
 		});
-
-		const cardsCountView = new CardsCountView(questionsCountContainer);
+		const cardsCountView = new CardsCountView(cardsCountContainer);
 		cardsCountView.setOnCountUpdate((count) => {
 			this.count = count;
 		}).render();
+		setIcon(cardsCountContainer.createEl("span", {
+			cls: "small-icon transparent-icon margin-left-small margin-right-small"
+		}), "move-right");
 
-		setIcon(grid.createSpan({
-			cls: "medium-icon transparent-icon justify-self-center",
-		}), "ellipsis-vertical");
+		const previewContainer = controls.createDiv({
+			cls: "flex-center margin-top-small margin-bottom-small"
+		});
+		let previewIcon = previewContainer.createSpan({
+			cls: "medium-icon gray-icon cursor-pointer justify-self-center"
+		});
+		setIcon(previewIcon, "scan-eye");
+		setIcon(previewContainer.createEl("span", {
+			cls: "small-icon transparent-icon margin-left-small margin-right-small"
+		}), "move-right");
 
-		let startIcon = grid.createSpan({
+		const startContainer = controls.createDiv({
+			cls: "flex-center margin-top-small margin-bottom-small"
+		});
+		let startIcon = startContainer.createSpan({
 			cls: "large-icon green-icon cursor-pointer justify-self-center"
 		});
 		setIcon(startIcon, "play");
@@ -189,7 +201,7 @@ export class IndexPageView extends PageView {
 
 		const updateSelected = () => {
 			const flashcards = this.flashcardsManager.getQuizFlashcards();
-			selectedCount.setText(flashcards.length.toString());
+			allCardsCount.setText(flashcards.length.toString());
 
 			let empty = 0;
 			let failed = 0;
@@ -229,7 +241,7 @@ export class IndexPageView extends PageView {
 			middleCardsCount.setText("0");
 			successCardsCount.setText("0");
 
-			selectedCount.setText("0");
+			allCardsCount.setText("0");
 
 			this.flashcardsManager.reset();
 
@@ -276,6 +288,10 @@ export class IndexPageView extends PageView {
 		startIcon.on("click", "span", () => {
 			this._start();
 		});
+
+		previewIcon.on("click", "span", () => {
+			this._start(true);
+		})
 
 
 		if(groups.length > 0) {

@@ -1,6 +1,6 @@
 import {ResultsController} from "./controllers/resultsController";
 
-import {Flashcard, FlashcardSide} from "./flashcard";
+import {Flashcard, FlashcardSide, FlashcardType} from "./flashcard";
 import {FlashcardsManager} from "./flashcardsManager";
 
 
@@ -92,6 +92,19 @@ export class Quiz {
 			return false;
 		}
 
+		switch (question.flashcard.type) {
+			case FlashcardType.INPUT: {
+				return this._compareInput(question);
+			}
+			case FlashcardType.MANUAL: {
+				return this._compareManual(question);
+			}
+		}
+
+		return false;
+	}
+
+	_compareInput(question: QuizQuestion): boolean {
 		let userAnswer = question.answer.toLocaleLowerCase().trim();
 		const answers = (question.side == FlashcardSide.LEFT ?
 			question.flashcard.question.right : question.flashcard.question.left).map(answer => {
@@ -105,6 +118,10 @@ export class Quiz {
 		}
 
 		return false;
+	}
+
+	_compareManual(question: QuizQuestion): boolean {
+		return Boolean(question.answer);
 	}
 }
 

@@ -217,7 +217,7 @@ export class ResultsController extends Controller {
 				today.quizzesToday = dayData.quizzesCount;
 			}
 
-			streakCounter.appendDay(dayTimestamp, dayTimestamp == todayDateStartTimestamp);
+			streakCounter.appendDay(dayTimestamp);
 
 			week.appendDay(dayTimestamp);
 			month.appendDay(dayTimestamp, dayData);
@@ -311,13 +311,9 @@ export class StreakCounter {
 
 	currentDayStartTimestamp: number = -1
 
-	appendDay(dayStartTimestamp: number, countStart: boolean = false) {
+	appendDay(dayStartTimestamp: number) {
 		if(this.currentDayStartTimestamp == -1) {
 			this.currentDayStartTimestamp = dayStartTimestamp;
-
-			if(countStart) {
-				this.daysCount = 1;
-			}
 
 			return;
 		}
@@ -514,6 +510,7 @@ export class YearProgression {
 
 			for(const day of val.days) {
 				month[day] = {
+					filled: 0,
 					[FlashcardStatus.FAILED]: 0,
 					[FlashcardStatus.MIDDLE]: 0,
 					[FlashcardStatus.SUCCESS]: 0
@@ -542,7 +539,8 @@ export class YearProgression {
 			for(const dayString of Object.keys(days)) {
 				const day = Number(dayString);
 
-				if(dayTimestamp <= day) {
+				if((dayTimestamp <= day) && (days[day]["filled"] == 0)) {
+					days[day]["filled"] = 1
 					days[day][FlashcardStatus.FAILED] = dayData.statusCount[FlashcardStatus.FAILED]
 					days[day][FlashcardStatus.MIDDLE] = dayData.statusCount[FlashcardStatus.MIDDLE]
 					days[day][FlashcardStatus.SUCCESS] = dayData.statusCount[FlashcardStatus.SUCCESS]
